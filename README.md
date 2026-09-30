@@ -12,3 +12,12 @@
 
 Ciclo: START -> attesa X s (0..10) -> OUT alto 400 ms -> pausa 5 s -> pronto.
 Il display usa GPIO 6, 7, 14, 15, 21, 22. Evitati: 4/5 (SD), 8 (LED RGB), 9 (BOOT), 12/13 (USB).
+
+## Note di sicurezza (analisi statica + revisione hardware)
+
+- Software: nessun Wi-Fi/BLE/OTA/seriale attivo -> nessuna superficie di attacco remota; nessun buffer non limitato; macchina a stati non bloccante.
+- Pull-down R2 (10k, base Q1 -> GND): senza, GPIO0 e' flottante durante reset/flash e puo' attivare il carico.
+- NPN + R1 1k: affidabile fino a ~100 mA. Oltre usare un MOSFET logic-level (gate 100 ohm + pull-down 10k).
+- D1 (1N4007) obbligatorio con carichi induttivi.
+- Cavi lunghi ai pulsanti: 100 ohm in serie + 100 nF verso GND per ESD/rimbalzi; i GPIO non sono 5 V tolerant.
+- Se un carico bloccato ON e' pericoloso, aggiungere un fusibile/limite hardware: il firmware da solo non garantisce l'OFF se si pianta.

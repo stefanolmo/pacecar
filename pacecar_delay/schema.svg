@@ -57,15 +57,30 @@
 <text x="765" y="362">Q1 2N2222 / BC337 (NPN)</text>
 <text x="765" y="380" font-size="12">C = alto, E = basso</text>
 <rect x="718" y="150" width="40" height="80" fill="#fff" stroke="#000" stroke-width="2"/>
-<text x="770" y="170">CARICO</text>
-<text x="770" y="188" font-size="12">(relay/LED/solenoide)</text>
-<text x="770" y="206" font-size="12">max ~500 mA</text>
+<text x="708" y="170" text-anchor="end">CARICO</text>
+<text x="708" y="188" font-size="12" text-anchor="end">(relay/LED/solenoide)</text>
+<text x="708" y="206" font-size="12" text-anchor="end">max ~100 mA (NPN)</text>
 <line x1="738" y1="150" x2="738" y2="110" stroke="#000" stroke-width="2"/>
 <line x1="738" y1="110" x2="600" y2="110" stroke="#000" stroke-width="2"/>
 <text x="560" y="106">+V carico (5..12 V)</text>
-<text x="770" y="240" font-size="12">D1 1N4007 in antiparallelo</text>
-<text x="770" y="255" font-size="12">al carico (catodo a +V)</text>
-<text x="770" y="270" font-size="12">se induttivo</text>
+<text x="770" y="262" font-size="12">D1 obbligatorio se il carico</text>
+<text x="770" y="277" font-size="12">e' induttivo (relay, solenoide)</text>
+<text x="770" y="292" font-size="12">Oltre 100 mA: MOSFET logic-level</text>
 <text x="20" y="520" font-size="12">Il GND del carico e il GND della scheda devono essere in comune.</text>
 <text x="20" y="538" font-size="12">GPIO0 = 3.3 V, max ~10 mA: carichi solo tramite Q1. Solo LED di test: GPIO0 -> 330 ohm -> LED -> GND.</text>
+<!-- D1 flyback: catodo a +V, anodo al collettore -->
+<line x1="738" y1="130" x2="800" y2="130" stroke="#000" stroke-width="2"/>
+<line x1="800" y1="130" x2="800" y2="168" stroke="#000" stroke-width="2"/>
+<line x1="788" y1="168" x2="812" y2="168" stroke="#000" stroke-width="3"/>
+<polygon points="788,196 812,196 800,170" fill="#fff" stroke="#000" stroke-width="2"/>
+<line x1="800" y1="196" x2="800" y2="230" stroke="#000" stroke-width="2"/>
+<line x1="800" y1="230" x2="738" y2="230" stroke="#000" stroke-width="2"/>
+<text x="820" y="188" font-size="12">D1 1N4007</text>
+<!-- R2 pull-down base (livello sicuro in reset/boot) -->
+<line x1="680" y1="388" x2="680" y2="410" stroke="#000" stroke-width="2"/>
+<circle cx="680" cy="388" r="3"/>
+<rect x="672" y="410" width="16" height="36" fill="#fff" stroke="#000" stroke-width="2"/>
+<line x1="680" y1="446" x2="680" y2="466" stroke="#000" stroke-width="2"/>
+<text x="596" y="432" font-size="12">R2 10k</text>
+<text x="574" y="447" font-size="12">pull-down</text>
 </svg>
