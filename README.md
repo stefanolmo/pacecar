@@ -1,14 +1,14 @@
-# Pacecar - timer di ritardo (LILYGO T-Display-S3)
+# Pacecar - timer di ritardo (Waveshare ESP32-C6-LCD-1.47)
 
-- Sketch: `pacecar_delay/pacecar_delay.ino`
+- Sketch: `pacecar_delay/pacecar_delay.ino` (libreria "GFX Library for Arduino", board "ESP32C6 Dev Module")
 - Schema: `pacecar_delay/schema.svg`
 
 | Funzione | GPIO | Note |
 |---|---|---|
-| +1 s | 14 | tasto onboard KEY2 |
-| -1 s | 0 | tasto onboard BOOT |
-| START | 21 | pulsante esterno verso GND (pull-up interno) |
-| OUT | 16 | HIGH 400 ms dopo X s; pilotare i carichi con un NPN |
+| +1 s | 1 | pulsante esterno verso GND (pull-up interno) |
+| -1 s | 2 | pulsante esterno verso GND |
+| START | 3 | pulsante esterno verso GND |
+| OUT | 0 | HIGH 400 ms dopo X s; pilotare i carichi con un NPN |
 
 Ciclo: START -> attesa X s (0..10) -> OUT alto 400 ms -> pausa 5 s -> pronto.
-Tutti i GPIO usati sono liberi sulla T-Display-S3 (il display usa 5-9, 15, 38-42, 45-48).
+Il display usa GPIO 6, 7, 14, 15, 21, 22. Evitati: 4/5 (SD), 8 (LED RGB), 9 (BOOT), 12/13 (USB).

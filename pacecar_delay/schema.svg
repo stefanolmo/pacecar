@@ -1,72 +1,71 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" font-family="monospace" font-size="14">
 <rect width="900" height="560" fill="#fff"/>
-<text x="20" y="28" font-size="18" font-weight="bold">Schema elettrico - Pacecar (LILYGO T-Display-S3)</text>
-<!-- Board -->
+<text x="20" y="28" font-size="18" font-weight="bold">Schema elettrico - Pacecar (Waveshare ESP32-C6-LCD-1.47)</text>
 <rect x="330" y="60" width="200" height="440" fill="#eef" stroke="#000" stroke-width="2"/>
-<text x="345" y="85" font-weight="bold">T-Display-S3</text>
-<text x="345" y="105">(ESP32-S3)</text>
-<text x="345" y="150">GPIO14 KEY2 (+1s)</text>
-<text x="345" y="175">GPIO0  BOOT (-1s)</text>
-<text x="345" y="230">GPIO21 &#x2190; START</text>
-<text x="345" y="330">GPIO16 &#x2192; OUT</text>
-<text x="345" y="440">GND</text>
-<text x="345" y="470">3V3 (non usato)</text>
-<text x="20" y="150" fill="#060">Tasti onboard: nessun cablaggio</text>
-<text x="20" y="175" fill="#060">(pull-up interni gia' presenti)</text>
-<!-- START -->
-<line x1="330" y1="226" x2="200" y2="226" stroke="#000" stroke-width="2"/>
-<circle cx="200" cy="226" r="4"/>
-<line x1="200" y1="226" x2="150" y2="226" stroke="#000" stroke-width="2"/>
-<line x1="150" y1="226" x2="150" y2="240" stroke="#000" stroke-width="2"/>
-<line x1="135" y1="240" x2="165" y2="240" stroke="#000" stroke-width="2"/>
-<circle cx="150" cy="243" r="3" fill="#fff" stroke="#000"/>
-<circle cx="150" cy="277" r="3" fill="#fff" stroke="#000"/>
-<line x1="150" y1="280" x2="150" y2="310" stroke="#000" stroke-width="2"/>
-<text x="50" y="262">SW1 START</text>
-<text x="50" y="280">(NO)</text>
-<line x1="120" y1="310" x2="180" y2="310" stroke="#000" stroke-width="2"/>
-<line x1="130" y1="316" x2="170" y2="316" stroke="#000" stroke-width="2"/>
-<line x1="140" y1="322" x2="160" y2="322" stroke="#000" stroke-width="2"/>
-<text x="110" y="345">GND</text>
-<text x="205" y="215" font-size="12">pull-up interno (INPUT_PULLUP)</text>
-<!-- OUT: R + NPN -->
-<line x1="530" y1="326" x2="600" y2="326" stroke="#000" stroke-width="2"/>
-<rect x="600" y="316" width="50" height="20" fill="#fff" stroke="#000" stroke-width="2"/>
-<text x="603" y="311" font-size="12">R1 1k</text>
-<line x1="650" y1="326" x2="700" y2="326" stroke="#000" stroke-width="2"/>
-<line x1="700" y1="326" x2="700" y2="305" stroke="#000" stroke-width="2"/>
-<circle cx="725" cy="326" r="25" fill="#fff" stroke="#000" stroke-width="2"/>
-<line x1="712" y1="308" x2="712" y2="344" stroke="#000" stroke-width="3"/>
-<line x1="700" y1="326" x2="712" y2="326" stroke="#000" stroke-width="2"/>
-<line x1="712" y1="316" x2="738" y2="298" stroke="#000" stroke-width="2"/>
-<line x1="738" y1="298" x2="738" y2="250" stroke="#000" stroke-width="2"/>
-<line x1="712" y1="336" x2="738" y2="354" stroke="#000" stroke-width="2"/>
-<line x1="738" y1="354" x2="738" y2="400" stroke="#000" stroke-width="2"/>
-<text x="765" y="300">Q1 2N2222 /</text>
-<text x="765" y="318">BC337 (NPN)</text>
-<text x="765" y="336">C = alto, E = basso</text>
-<!-- Emitter to GND -->
-<line x1="738" y1="400" x2="738" y2="440" stroke="#000" stroke-width="2"/>
-<line x1="530" y1="440" x2="738" y2="440" stroke="#000" stroke-width="2"/>
-<line x1="710" y1="440" x2="766" y2="440" stroke="#000" stroke-width="2"/>
-<line x1="720" y1="446" x2="756" y2="446" stroke="#000" stroke-width="2"/>
-<line x1="730" y1="452" x2="746" y2="452" stroke="#000" stroke-width="2"/>
-<!-- Load -->
-<line x1="738" y1="250" x2="738" y2="200" stroke="#000" stroke-width="2"/>
-<rect x="718" y="150" width="40" height="50" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="345" y="85" font-weight="bold">ESP32-C6-LCD-1.47</text>
+<text x="345" y="105" font-size="12">(display integrato: GPIO 6,7,14,15,21,22)</text>
+<text x="345" y="152">GPIO1 &#x2190; PLUS</text>
+<text x="345" y="232">GPIO2 &#x2190; MINUS</text>
+<text x="345" y="312">GPIO3 &#x2190; START</text>
+<text x="345" y="392">GPIO0 &#x2192; OUT</text>
+<text x="345" y="470">GND</text>
+<line x1="330" y1="148" x2="150" y2="148" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="148" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="148" x2="130" y2="166" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="182" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="182" x2="150" y2="198" stroke="#000" stroke-width="2"/>
+<line x1="150" y1="198" x2="60" y2="198" stroke="#000" stroke-width="2"/>
+<circle cx="60" cy="198" r="4"/>
+<text x="20" y="142">SW1 +1s (NO)</text>
+<line x1="330" y1="228" x2="150" y2="228" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="228" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="228" x2="130" y2="246" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="262" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="262" x2="150" y2="278" stroke="#000" stroke-width="2"/>
+<line x1="150" y1="278" x2="60" y2="278" stroke="#000" stroke-width="2"/>
+<circle cx="60" cy="278" r="4"/>
+<text x="20" y="222">SW2 -1s (NO)</text>
+<line x1="330" y1="308" x2="150" y2="308" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="308" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="308" x2="130" y2="326" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="342" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="342" x2="150" y2="358" stroke="#000" stroke-width="2"/>
+<line x1="150" y1="358" x2="60" y2="358" stroke="#000" stroke-width="2"/>
+<circle cx="60" cy="358" r="4"/>
+<text x="20" y="302">SW3 START (NO)</text>
+<line x1="60" y1="198" x2="60" y2="278" stroke="#000" stroke-width="2"/>
+<line x1="60" y1="278" x2="60" y2="358" stroke="#000" stroke-width="2"/>
+<line x1="60" y1="358" x2="60" y2="466" stroke="#000" stroke-width="2"/>
+<line x1="60" y1="466" x2="330" y2="466" stroke="#000" stroke-width="2"/>
+<line x1="60" y1="198" x2="60" y2="198" stroke="#000"/>
+<text x="20" y="490" font-size="12">GND comune (pull-up interni: INPUT_PULLUP)</text>
+<line x1="530" y1="388" x2="600" y2="388" stroke="#000" stroke-width="2"/>
+<rect x="600" y="378" width="50" height="20" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="603" y="373" font-size="12">R1 1k</text>
+<line x1="650" y1="388" x2="700" y2="388" stroke="#000" stroke-width="2"/>
+<circle cx="725" cy="388" r="25" fill="#fff" stroke="#000" stroke-width="2"/>
+<line x1="712" y1="370" x2="712" y2="406" stroke="#000" stroke-width="3"/>
+<line x1="700" y1="388" x2="712" y2="388" stroke="#000" stroke-width="2"/>
+<line x1="712" y1="378" x2="738" y2="360" stroke="#000" stroke-width="2"/>
+<line x1="738" y1="360" x2="738" y2="230" stroke="#000" stroke-width="2"/>
+<line x1="712" y1="398" x2="738" y2="416" stroke="#000" stroke-width="2"/>
+<line x1="738" y1="416" x2="738" y2="466" stroke="#000" stroke-width="2"/>
+<line x1="330" y1="466" x2="738" y2="466" stroke="#000" stroke-width="2"/>
+<line x1="710" y1="466" x2="766" y2="466" stroke="#000" stroke-width="2"/>
+<line x1="720" y1="472" x2="756" y2="472" stroke="#000" stroke-width="2"/>
+<line x1="730" y1="478" x2="746" y2="478" stroke="#000" stroke-width="2"/>
+<text x="765" y="362">Q1 2N2222 / BC337 (NPN)</text>
+<text x="765" y="380" font-size="12">C = alto, E = basso</text>
+<rect x="718" y="150" width="40" height="80" fill="#fff" stroke="#000" stroke-width="2"/>
 <text x="770" y="170">CARICO</text>
-<text x="770" y="188">(relay/LED/solenoide)</text>
-<text x="770" y="206">max ~500 mA</text>
-<!-- Diode -->
-<line x1="810" y1="150" x2="810" y2="250" stroke="#000" stroke-width="2" stroke-dasharray="4"/>
-<text x="822" y="235" font-size="12">D1 1N4007</text>
-<text x="822" y="250" font-size="12">flyback (catodo</text>
-<text x="822" y="265" font-size="12">a +V) se carico</text>
-<text x="822" y="280" font-size="12">induttivo</text>
+<text x="770" y="188" font-size="12">(relay/LED/solenoide)</text>
+<text x="770" y="206" font-size="12">max ~500 mA</text>
 <line x1="738" y1="150" x2="738" y2="110" stroke="#000" stroke-width="2"/>
-<line x1="738" y1="110" x2="700" y2="110" stroke="#000" stroke-width="2"/>
-<text x="600" y="106">+V carico (5..12 V)</text>
-<text x="20" y="480" font-size="12">Nota: GND alimentazione carico e GND della scheda devono essere in comune.</text>
-<text x="20" y="500" font-size="12">Uscita GPIO16 = 3.3 V, max ~10 mA: collegare LED/carichi solo tramite Q1.</text>
-<text x="20" y="520" font-size="12">Con solo LED (test): GPIO16 -> 330 ohm -> LED -> GND, senza Q1.</text>
+<line x1="738" y1="110" x2="600" y2="110" stroke="#000" stroke-width="2"/>
+<text x="560" y="106">+V carico (5..12 V)</text>
+<text x="770" y="240" font-size="12">D1 1N4007 in antiparallelo</text>
+<text x="770" y="255" font-size="12">al carico (catodo a +V)</text>
+<text x="770" y="270" font-size="12">se induttivo</text>
+<text x="20" y="520" font-size="12">Il GND del carico e il GND della scheda devono essere in comune.</text>
+<text x="20" y="538" font-size="12">GPIO0 = 3.3 V, max ~10 mA: carichi solo tramite Q1. Solo LED di test: GPIO0 -> 330 ohm -> LED -> GND.</text>
 </svg>
