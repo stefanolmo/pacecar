@@ -1,23 +1,25 @@
-# Pacecar - timer di ritardo (Waveshare ESP32-C6-LCD-1.47)
+# Pacecar - timer di ritardo con touch (Freenove ESP32-S3 CYD 2.8")
 
-- Sketch: `pacecar_delay/pacecar_delay.ino` (libreria "GFX Library for Arduino", board "ESP32C6 Dev Module")
+- Sketch: `pacecar_delay/pacecar_delay.ino` (libreria "GFX Library for Arduino", board "ESP32S3 Dev Module")
 - Schema: `pacecar_delay/schema.svg`
 
-| Funzione | GPIO | Note |
-|---|---|---|
-| +1 s | 1 | pulsante esterno verso GND (pull-up interno) |
-| -1 s | 2 | pulsante esterno verso GND |
-| START | 3 | pulsante esterno verso GND |
-| OUT | 0 | HIGH 400 ms dopo X s; pilotare i carichi con un NPN |
+Ciclo: START (touch o BOOT) -> attesa X s (0..10, impostati con [-]/[+] sul touch) -> OUT alto 400 ms -> pausa 5 s -> pronto.
+X e' sempre visibile fisso al centro del display.
 
-Ciclo: START -> attesa X s (0..10) -> OUT alto 400 ms -> pausa 5 s -> pronto.
-Il display usa GPIO 6, 7, 14, 15, 21, 22. Evitati: 4/5 (SD), 8 (LED RGB), 9 (BOOT), 12/13 (USB).
+| Funzione | Pin |
+|---|---|
+| Display SPI | MOSI 11, SCLK 12, MISO 13, CS 10, DC 46, BL 45 |
+| Touch FT6336U (I2C 0x38) | rilevato in automatico: SDA2/SCL1 oppure SDA16/SCL15 (RST18) |
+| START fisico (opz.) | GPIO0 (BOOT) |
+| OUT | GPIO21 - da verificare libero sul connettore di espansione |
 
-## Note di sicurezza (analisi statica + revisione hardware)
+## Da verificare al primo avvio (non confermato da documentazione ufficiale)
+- Driver display ILI9341 (default) o ST7789: `DISPLAY_ILI9341`. Colori invertiti: `LCD_IPS`.
+- Touch che risponde specchiato/ruotato: `TOUCH_SWAP_XY`, `TOUCH_FLIP_X`, `TOUCH_FLIP_Y` (con `TOUCH_DEBUG true` si leggono le coordinate su Serial).
+- Se compare "TOUCH NON TROVATO" lo sketch funziona comunque con il solo tasto BOOT.
 
-- Software: nessun Wi-Fi/BLE/OTA/seriale attivo -> nessuna superficie di attacco remota; nessun buffer non limitato; macchina a stati non bloccante.
-- Pull-down R2 (10k, base Q1 -> GND): senza, GPIO0 e' flottante durante reset/flash e puo' attivare il carico.
-- NPN + R1 1k: affidabile fino a ~100 mA. Oltre usare un MOSFET logic-level (gate 100 ohm + pull-down 10k).
-- D1 (1N4007) obbligatorio con carichi induttivi.
-- Cavi lunghi ai pulsanti: 100 ohm in serie + 100 nF verso GND per ESD/rimbalzi; i GPIO non sono 5 V tolerant.
-- Se un carico bloccato ON e' pericoloso, aggiungere un fusibile/limite hardware: il firmware da solo non garantisce l'OFF se si pianta.
+## Note di sicurezza
+- Nessun Wi-Fi/BLE/OTA attivo: nessuna superficie di attacco remota.
+- R2 10k (base Q1 -> GND): senza, il pin e' flottante durante reset/flash e puo' attivare il carico.
+- NPN + R1 1k affidabile fino a ~100 mA; oltre usare un MOSFET logic-level. D1 obbligatorio con carichi induttivi.
+- Se un carico bloccato ON e' pericoloso serve un limite hardware (fusibile): il firmware da solo non garantisce l'OFF se si pianta.
