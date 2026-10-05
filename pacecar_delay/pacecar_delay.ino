@@ -1,74 +1,41 @@
 /*
- * Pacecar - timer di ritardo con touch per Freenove ESP32-S3 CYD 2.8" (240x320 IPS, touch capacitivo FT6336U)
+ * Pacecar - timer di ritardo per Heltec WiFi Kit 8 (ESP8266 + OLED SSD1306 0.91" 128x32)
  *
  * Funzionamento:
- *   - tasto START sul touch (oppure pulsante BOOT/GPIO0) -> dopo X secondi, OUT = HIGH per 400 ms
- *   - X (0..10 s) si imposta con i tasti touch [-] e [+]; il valore e' sempre visibile fisso al centro
+ *   - tasto START (PRG onboard, GPIO0) -> dopo X secondi, OUT (GPIO14) = HIGH per 400 ms
+ *   - X (0..10 s) si imposta con due pulsanti esterni: PLUS (GPIO12) = +1 s, MINUS (GPIO13) = -1 s
+ *   - X e' sempre visibile fisso a sinistra sull'OLED; a destra lo stato
  *   - dopo l'impulso: pausa di 5 s in cui ogni comando e' ignorato, poi si riparte
- *   - durante ritardo/impulso/pausa i tasti [-] [+] sono disattivati (grigi)
+ *   - durante ritardo/impulso/pausa i tasti +/- sono ignorati
  *
- * Librerie: "GFX Library for Arduino" (moononournation). Il touch FT6336U e' letto via Wire, senza libreria.
- * Board: "ESP32S3 Dev Module", USB CDC On Boot: Enabled, Flash/PSRAM come da scheda Freenove.
+ * Libreria: "U8g2" (olikraus), da Library Manager.
+ * Board: "NodeMCU 1.0 (ESP-12E Module)" oppure il pacchetto Heltec "WiFi Kit 8"; Flash 4MB.
  *
- * DA VERIFICARE sulla propria scheda (non confermato da documentazione ufficiale):
- *   - driver display: ILI9341 (default) o ST7789  -> DISPLAY_ILI9341
- *   - colori invertiti                            -> LCD_IPS true/false
- *   - orientamento del touch                      -> TOUCH_SWAP_XY / TOUCH_FLIP_X / TOUCH_FLIP_Y
- *   - GPIO libero sul connettore di espansione    -> PIN_OUT
- * I pin I2C del touch vengono rilevati automaticamente (provate le due varianti Freenove note).
+ * Pin OLED (fissi sulla scheda): SDA 4, SCL 5, RST 16.
+ * Pin evitati: 15 (deve essere LOW al boot), 2 (LED + strapping), 9/10 (flash), 1/3 (seriale/USB).
  */
 
 #include <Arduino.h>
-#include <Wire.h>
-#include <Arduino_GFX_Library.h>
+#include <ESP8266WiFi.h>
+#include <U8g2lib.h>
 
-// ---- Display (SPI) ----
-#define DISPLAY_ILI9341 1            // 1 = ILI9341, 0 = ST7789
-constexpr bool   LCD_IPS = true;     // se i colori sono invertiti, mettere false
-constexpr int8_t LCD_MOSI = 11, LCD_SCLK = 12, LCD_MISO = 13, LCD_CS = 10, LCD_DC = 46, LCD_BL = 45;
-constexpr int8_t LCD_RST = GFX_NOT_DEFINED;   // reset non pilotato via GPIO su questa variante
-
-Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCLK, LCD_MOSI, LCD_MISO);
-#if DISPLAY_ILI9341
-Arduino_GFX *gfx = new Arduino_ILI9341(bus, LCD_RST, 0, LCD_IPS);
-#else
-Arduino_GFX *gfx = new Arduino_ST7789(bus, LCD_RST, 0, LCD_IPS, 240, 320);
-#endif
-
-// ---- Touch FT6336U (I2C 0x38) ----
-constexpr uint8_t FT_ADDR = 0x38;
-struct TouchPins { int8_t sda, scl, rst; };
-const TouchPins TOUCH_CANDIDATES[] = { {2, 1, -1}, {16, 15, 18} };   // varianti note: senza / con RST
-constexpr bool TOUCH_SWAP_XY = true;    // pannello nativo 240x320 portrait -> landscape 320x240
-constexpr bool TOUCH_FLIP_X  = false;
-constexpr bool TOUCH_FLIP_Y  = true;
-constexpr bool TOUCH_DEBUG   = false;   // true: stampa coordinate su Serial per calibrare
+// ---- OLED ----
+constexpr uint8_t OLED_RST = 16, OLED_SCL = 5, OLED_SDA = 4;
+U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, OLED_RST, OLED_SCL, OLED_SDA);
 
 // ---- Pin utente ----
-constexpr uint8_t PIN_START_HW = 0;     // pulsante BOOT (opzionale come START fisico)
-constexpr uint8_t PIN_OUT      = 21;    // uscita impulso (3.3 V, max ~10 mA: usare un transistor) - VERIFICARE che sia libero
+constexpr uint8_t PIN_START = 0;    // tasto PRG onboard (verso GND). Non tenerlo premuto durante reset/accensione!
+constexpr uint8_t PIN_PLUS  = 12;   // +1 s (verso GND, pull-up interno)
+constexpr uint8_t PIN_MINUS = 13;   // -1 s (verso GND, pull-up interno)
+constexpr uint8_t PIN_OUT   = 14;   // uscita impulso (3.3 V, max ~10 mA: usare un transistor per carichi)
 
 // ---- Temporizzazioni ----
 constexpr uint32_t PULSE_MS    = 400;
 constexpr uint32_t COOLDOWN_MS = 5000;
 constexpr uint32_t DEBOUNCE_MS = 30;
-constexpr uint32_t TOUCH_POLL_MS = 25;
 constexpr uint8_t  DELAY_MAX_S = 10;
 
-constexpr int16_t SCREEN_W = 320, SCREEN_H = 240;   // landscape (rotation 1)
-
-struct Rect { int16_t x, y, w, h; };
-constexpr Rect BTN_MINUS = {10, 50, 80, 80};
-constexpr Rect BTN_PLUS  = {230, 50, 80, 80};
-constexpr Rect BTN_START = {40, 150, 240, 70};
-constexpr Rect NUM_AREA  = {95, 36, 130, 108};
-
-bool inside(const Rect &r, int16_t x, int16_t y) {
-  constexpr int16_t slop = 6;   // margine per dita grosse
-  return x >= r.x - slop && x < r.x + r.w + slop && y >= r.y - slop && y < r.y + r.h + slop;
-}
-
-// Pulsante fisico attivo basso con debounce; pressed() vale true una sola volta per pressione.
+// Tasto attivo basso con debounce; pressed() vale true una sola volta per pressione.
 struct Button {
   uint8_t  pin;
   bool     stable = HIGH, last = HIGH;
@@ -85,148 +52,70 @@ struct Button {
     return false;
   }
 };
-Button btnStartHw(PIN_START_HW);
+
+Button btnPlus(PIN_PLUS), btnMinus(PIN_MINUS), btnStart(PIN_START);
 
 enum State { IDLE, WAITING, PULSING, COOLDOWN };
 State    state = IDLE;
 uint32_t stateStart = 0;
 uint8_t  delayS = 3;
-bool     touchOk = false;
 
-// ---------------- Touch ----------------
-bool probeTouch(int8_t sda, int8_t scl) {
-  Wire.end();
-  Wire.begin(sda, scl, 400000);
-  Wire.beginTransmission(FT_ADDR);
-  return Wire.endTransmission() == 0;
-}
-
-bool initTouch() {
-  for (const TouchPins &c : TOUCH_CANDIDATES)             // 1) il touch e' gia' attivo?
-    if (probeTouch(c.sda, c.scl)) return true;
-  for (const TouchPins &c : TOUCH_CANDIDATES) {           // 2) provo con reset hardware, se previsto
-    if (c.rst < 0) continue;
-    pinMode(c.rst, OUTPUT);
-    digitalWrite(c.rst, LOW);  delay(10);
-    digitalWrite(c.rst, HIGH); delay(120);
-    if (probeTouch(c.sda, c.scl)) return true;
-  }
-  Wire.end();
-  return false;
-}
-
-// true se il dito e' appoggiato; x,y in coordinate landscape 320x240
-bool readTouch(int16_t &x, int16_t &y) {
-  Wire.beginTransmission(FT_ADDR);
-  Wire.write(0x02);                                      // TD_STATUS, poi P1_XH..P1_YL
-  if (Wire.endTransmission(false) != 0) return false;
-  if (Wire.requestFrom((int)FT_ADDR, 5) != 5) return false;
-  uint8_t b[5];
-  for (uint8_t &v : b) v = Wire.read();
-  if ((b[0] & 0x0F) == 0) return false;
-  int16_t rx = ((b[1] & 0x0F) << 8) | b[2];
-  int16_t ry = ((b[3] & 0x0F) << 8) | b[4];
-  if (TOUCH_DEBUG) Serial.printf("touch raw %d,%d\n", rx, ry);
-  x = TOUCH_SWAP_XY ? ry : rx;
-  y = TOUCH_SWAP_XY ? rx : ry;
-  x = constrain(x, 0, SCREEN_W - 1);
-  y = constrain(y, 0, SCREEN_H - 1);
-  if (TOUCH_FLIP_X) x = SCREEN_W - 1 - x;
-  if (TOUCH_FLIP_Y) y = SCREEN_H - 1 - y;
-  return true;
-}
-
-// ---------------- UI ----------------
-void drawCenteredIn(const Rect &r, const char *txt, uint8_t size, uint16_t color) {
-  int16_t x1, y1; uint16_t w, h;
-  gfx->setTextSize(size);
-  gfx->getTextBounds(txt, 0, 0, &x1, &y1, &w, &h);
-  gfx->setTextColor(color);
-  gfx->setCursor(r.x + (r.w - (int16_t)w) / 2 - x1, r.y + (r.h - (int16_t)h) / 2 - y1);
-  gfx->print(txt);
-}
-
-void drawButton(const Rect &r, const char *label, uint8_t size, uint16_t fill, uint16_t text) {
-  gfx->fillRoundRect(r.x, r.y, r.w, r.h, 10, fill);
-  gfx->drawRoundRect(r.x, r.y, r.w, r.h, 10, WHITE);
-  drawCenteredIn(r, label, size, text);
-}
-
-void drawAdjustButtons() {
-  bool en = (state == IDLE);
-  drawButton(BTN_MINUS, "-", 6, en ? BLUE : DARKGREY, en ? WHITE : LIGHTGREY);
-  drawButton(BTN_PLUS,  "+", 6, en ? BLUE : DARKGREY, en ? WHITE : LIGHTGREY);
-}
-
-void drawStartButton() {
-  switch (state) {
-    case IDLE:    drawButton(BTN_START, "START",     4, GREEN,    BLACK); break;
-    case WAITING: drawButton(BTN_START, "ATTESA...", 4, ORANGE,   BLACK); break;
-    case PULSING: drawButton(BTN_START, "IMPULSO",   4, RED,      WHITE); break;
-    default:      drawButton(BTN_START, "PAUSA",     4, DARKGREY, WHITE); break;
+const char* stateLabel(State s) {
+  switch (s) {
+    case IDLE:    return "PRONTO";
+    case WAITING: return "ATTESA...";
+    case PULSING: return "IMPULSO";
+    default:      return "PAUSA";
   }
 }
 
-void drawDelay() {
-  gfx->fillRect(NUM_AREA.x, NUM_AREA.y, NUM_AREA.w, NUM_AREA.h, BLACK);
-  char buf[4]; snprintf(buf, sizeof(buf), "%u", delayS);
-  drawCenteredIn(NUM_AREA, buf, 10, WHITE);              // 60x80 px per cifra
+// Ridisegna l'intero display (128x32: buffer completo, ~20 ms)
+void draw() {
+  char buf[4];
+  snprintf(buf, sizeof(buf), "%u", delayS);
+
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_logisoso28_tn);               // cifre alte 28 px
+  u8g2.drawStr((46 - u8g2.getStrWidth(buf)) / 2, 31, buf);
+  u8g2.drawVLine(48, 2, 28);
+  u8g2.setFont(u8g2_font_6x12_tr);
+  u8g2.drawStr(54, 11, "RITARDO (s)");
+  u8g2.setFont(u8g2_font_helvB10_tr);
+  u8g2.drawStr(54, 29, stateLabel(state));
+  u8g2.sendBuffer();
 }
 
 void setState(State s) {
   state = s;
   stateStart = millis();
   digitalWrite(PIN_OUT, s == PULSING ? HIGH : LOW);
-  drawStartButton();
-  drawAdjustButtons();
+  draw();
 }
 
 void setup() {
   pinMode(PIN_OUT, OUTPUT); digitalWrite(PIN_OUT, LOW);
-  pinMode(LCD_BL, OUTPUT);  digitalWrite(LCD_BL, HIGH);
-  btnStartHw.begin();
-  if (TOUCH_DEBUG) Serial.begin(115200);
+  btnPlus.begin(); btnMinus.begin(); btnStart.begin();
 
-  gfx->begin();
-  gfx->setRotation(1);                                   // landscape 320x240
-  gfx->fillScreen(BLACK);
-  Rect title = {0, 4, SCREEN_W, 24};
-  drawCenteredIn(title, "RITARDO (s)", 2, CYAN);
+  WiFi.persistent(false);       // l'ESP8266 si riconnette da solo a credenziali salvate: radio spenta
+  WiFi.mode(WIFI_OFF);
+  WiFi.forceSleepBegin();
 
-  touchOk = initTouch();
-  if (!touchOk) {
-    Rect msg = {0, 220, SCREEN_W, 20};
-    drawCenteredIn(msg, "TOUCH NON TROVATO - usa BOOT", 2, RED);
-  }
-  drawDelay();
-  drawStartButton();
-  drawAdjustButtons();
+  u8g2.begin();
+  u8g2.setBusClock(400000);
+  draw();
 }
 
 void loop() {
-  static bool     wasDown = false;
-  static uint32_t lastPoll = 0;
-  bool tapMinus = false, tapPlus = false, tapStart = false;
-
-  if (touchOk && millis() - lastPoll >= TOUCH_POLL_MS) {
-    lastPoll = millis();
-    int16_t x = 0, y = 0;
-    bool down = readTouch(x, y);
-    if (down && !wasDown) {                              // solo sul fronte di pressione
-      tapMinus = inside(BTN_MINUS, x, y);
-      tapPlus  = inside(BTN_PLUS,  x, y);
-      tapStart = inside(BTN_START, x, y);
-    }
-    wasDown = down;
-  }
-  if (btnStartHw.pressed()) tapStart = true;
-
+  bool plus  = btnPlus.pressed();
+  bool minus = btnMinus.pressed();
+  bool start = btnStart.pressed();
   uint32_t elapsed = millis() - stateStart;
+
   switch (state) {
     case IDLE:
-      if (tapPlus  && delayS < DELAY_MAX_S) { delayS++; drawDelay(); }
-      if (tapMinus && delayS > 0)           { delayS--; drawDelay(); }
-      if (tapStart) setState(WAITING);
+      if (plus  && delayS < DELAY_MAX_S) { delayS++; draw(); }
+      if (minus && delayS > 0)           { delayS--; draw(); }
+      if (start) setState(WAITING);
       break;
     case WAITING:
       if (elapsed >= (uint32_t)delayS * 1000UL) setState(PULSING);
@@ -238,4 +127,5 @@ void loop() {
       if (elapsed >= COOLDOWN_MS) setState(IDLE);
       break;
   }
+  yield();
 }

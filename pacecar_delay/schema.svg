@@ -1,59 +1,78 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="monospace" font-size="14">
 <rect width="900" height="520" fill="#fff"/>
-<text x="20" y="28" font-size="18" font-weight="bold">Schema elettrico - Pacecar (Freenove ESP32-S3 CYD 2.8")</text>
-<rect x="60" y="60" width="260" height="400" fill="#eef" stroke="#000" stroke-width="2"/>
-<text x="75" y="85" font-weight="bold">Freenove ESP32-S3 CYD</text>
-<text x="75" y="107" font-size="12">display + touch integrati:</text>
-<text x="75" y="124" font-size="12">SPI 10,11,12,13,45,46</text>
-<text x="75" y="141" font-size="12">I2C touch (1,2 o 15,16,17,18)</text>
-<text x="75" y="190" font-size="12">START: sul touch (o BOOT = GPIO0)</text>
-<text x="75" y="207" font-size="12">+/- : sul touch, nessun cablaggio</text>
-<text x="75" y="388">GPIO21 &#x2192; OUT</text>
-<text x="75" y="450">GND</text>
-<!-- OUT: R1 + NPN -->
-<line x1="320" y1="384" x2="400" y2="384" stroke="#000" stroke-width="2"/>
-<rect x="400" y="374" width="50" height="20" fill="#fff" stroke="#000" stroke-width="2"/>
-<text x="403" y="369" font-size="12">R1 1k</text>
-<line x1="450" y1="384" x2="500" y2="384" stroke="#000" stroke-width="2"/>
-<circle cx="525" cy="384" r="25" fill="#fff" stroke="#000" stroke-width="2"/>
-<line x1="512" y1="366" x2="512" y2="402" stroke="#000" stroke-width="3"/>
-<line x1="500" y1="384" x2="512" y2="384" stroke="#000" stroke-width="2"/>
-<line x1="512" y1="374" x2="538" y2="356" stroke="#000" stroke-width="2"/>
-<line x1="538" y1="356" x2="538" y2="230" stroke="#000" stroke-width="2"/>
-<line x1="512" y1="394" x2="538" y2="412" stroke="#000" stroke-width="2"/>
-<line x1="538" y1="412" x2="538" y2="446" stroke="#000" stroke-width="2"/>
-<line x1="320" y1="446" x2="538" y2="446" stroke="#000" stroke-width="2"/>
-<line x1="510" y1="446" x2="566" y2="446" stroke="#000" stroke-width="2"/>
-<line x1="520" y1="452" x2="556" y2="452" stroke="#000" stroke-width="2"/>
-<line x1="530" y1="458" x2="546" y2="458" stroke="#000" stroke-width="2"/>
-<text x="565" y="360">Q1 2N2222 / BC337 (NPN)</text>
-<text x="565" y="378" font-size="12">C = alto, E = basso</text>
-<!-- R2 pull-down base -->
-<line x1="480" y1="384" x2="480" y2="400" stroke="#000" stroke-width="2"/>
-<circle cx="480" cy="384" r="3"/>
-<rect x="472" y="400" width="16" height="30" fill="#fff" stroke="#000" stroke-width="2"/>
-<line x1="480" y1="430" x2="480" y2="446" stroke="#000" stroke-width="2"/>
-<text x="400" y="420" font-size="12">R2 10k</text>
-<text x="380" y="435" font-size="12">pull-down</text>
-<!-- Carico -->
-<line x1="538" y1="110" x2="538" y2="150" stroke="#000" stroke-width="2"/>
-<rect x="518" y="150" width="40" height="80" fill="#fff" stroke="#000" stroke-width="2"/>
-<text x="508" y="180" text-anchor="end">CARICO</text>
-<text x="508" y="198" font-size="12" text-anchor="end">(relay/LED/solenoide)</text>
-<text x="508" y="216" font-size="12" text-anchor="end">max ~100 mA (NPN)</text>
-<line x1="538" y1="110" x2="420" y2="110" stroke="#000" stroke-width="2"/>
-<text x="330" y="106">+V carico (5..12 V)</text>
-<!-- D1 flyback -->
-<line x1="538" y1="130" x2="600" y2="130" stroke="#000" stroke-width="2"/>
-<line x1="600" y1="130" x2="600" y2="168" stroke="#000" stroke-width="2"/>
-<line x1="588" y1="168" x2="612" y2="168" stroke="#000" stroke-width="3"/>
-<polygon points="588,196 612,196 600,170" fill="#fff" stroke="#000" stroke-width="2"/>
-<line x1="600" y1="196" x2="600" y2="230" stroke="#000" stroke-width="2"/>
-<line x1="600" y1="230" x2="538" y2="230" stroke="#000" stroke-width="2"/>
-<text x="620" y="188" font-size="12">D1 1N4007</text>
-<text x="620" y="262" font-size="12">D1 obbligatorio se il carico e' induttivo.</text>
-<text x="620" y="277" font-size="12">Oltre 100 mA: MOSFET logic-level</text>
-<text x="620" y="292" font-size="12">(gate 100 ohm + pull-down 10k).</text>
-<text x="20" y="490" font-size="12">GND del carico e GND della scheda in comune. GPIO21 = 3.3 V, max ~10 mA: carichi solo tramite Q1.</text>
-<text x="20" y="508" font-size="12">Verificare sul connettore di espansione che GPIO21 sia libero; altrimenti cambiare PIN_OUT nello sketch.</text>
+<text x="20" y="28" font-size="18" font-weight="bold">Schema elettrico - Pacecar (Heltec WiFi Kit 8)</text>
+<rect x="330" y="60" width="200" height="400" fill="#eef" stroke="#000" stroke-width="2"/>
+<text x="345" y="85" font-weight="bold">WiFi Kit 8</text>
+<text x="345" y="103" font-size="12">(ESP8266 + OLED 128x32:</text>
+<text x="345" y="119" font-size="12">GPIO 4,5,16 interni)</text>
+<text x="345" y="152">GPIO12 &#x2190; PLUS</text>
+<text x="345" y="232">GPIO13 &#x2190; MINUS</text>
+<text x="345" y="312">GPIO0  PRG = START</text>
+<text x="345" y="328" font-size="12">(tasto onboard)</text>
+<text x="345" y="392">GPIO14 &#x2192; OUT</text>
+<text x="345" y="450">GND</text>
+<line x1="330" y1="148" x2="150" y2="148" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="148" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="148" x2="130" y2="166" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="182" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="182" x2="150" y2="198" stroke="#000" stroke-width="2"/>
+<line x1="150" y1="198" x2="60" y2="198" stroke="#000" stroke-width="2"/>
+<circle cx="60" cy="198" r="4"/>
+<text x="20" y="142">SW1 +1s (NO)</text>
+<line x1="330" y1="228" x2="150" y2="228" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="228" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="228" x2="130" y2="246" stroke="#000" stroke-width="2"/>
+<circle cx="150" cy="262" r="3" fill="#fff" stroke="#000"/>
+<line x1="150" y1="262" x2="150" y2="278" stroke="#000" stroke-width="2"/>
+<line x1="150" y1="278" x2="60" y2="278" stroke="#000" stroke-width="2"/>
+<circle cx="60" cy="278" r="4"/>
+<text x="20" y="222">SW2 -1s (NO)</text>
+<line x1="60" y1="198" x2="60" y2="278" stroke="#000" stroke-width="2"/>
+<line x1="60" y1="278" x2="60" y2="446" stroke="#000" stroke-width="2"/>
+<line x1="60" y1="446" x2="330" y2="446" stroke="#000" stroke-width="2"/>
+<text x="20" y="470" font-size="12">GND comune (pull-up interni: INPUT_PULLUP)</text>
+<text x="20" y="300" font-size="12">START: tasto PRG onboard,</text>
+<text x="20" y="315" font-size="12">nessun cablaggio</text>
+<line x1="530" y1="388" x2="580" y2="388" stroke="#000" stroke-width="2"/>
+<rect x="580" y="378" width="50" height="20" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="583" y="373" font-size="12">R1 1k</text>
+<line x1="630" y1="388" x2="680" y2="388" stroke="#000" stroke-width="2"/>
+<circle cx="705" cy="388" r="25" fill="#fff" stroke="#000" stroke-width="2"/>
+<line x1="692" y1="370" x2="692" y2="406" stroke="#000" stroke-width="3"/>
+<line x1="680" y1="388" x2="692" y2="388" stroke="#000" stroke-width="2"/>
+<line x1="692" y1="378" x2="718" y2="360" stroke="#000" stroke-width="2"/>
+<line x1="718" y1="360" x2="718" y2="230" stroke="#000" stroke-width="2"/>
+<line x1="692" y1="398" x2="718" y2="416" stroke="#000" stroke-width="2"/>
+<line x1="718" y1="416" x2="718" y2="446" stroke="#000" stroke-width="2"/>
+<line x1="330" y1="446" x2="718" y2="446" stroke="#000" stroke-width="2"/>
+<line x1="690" y1="446" x2="746" y2="446" stroke="#000" stroke-width="2"/>
+<line x1="700" y1="452" x2="736" y2="452" stroke="#000" stroke-width="2"/>
+<line x1="710" y1="458" x2="726" y2="458" stroke="#000" stroke-width="2"/>
+<text x="745" y="360" font-size="12">Q1 2N2222/BC337</text>
+<text x="745" y="376" font-size="12">C = alto, E = basso</text>
+<line x1="660" y1="388" x2="660" y2="400" stroke="#000" stroke-width="2"/>
+<circle cx="660" cy="388" r="3"/>
+<rect x="652" y="400" width="16" height="30" fill="#fff" stroke="#000" stroke-width="2"/>
+<line x1="660" y1="430" x2="660" y2="446" stroke="#000" stroke-width="2"/>
+<text x="580" y="420" font-size="12">R2 10k</text>
+<text x="560" y="435" font-size="12">pull-down</text>
+<line x1="718" y1="110" x2="718" y2="150" stroke="#000" stroke-width="2"/>
+<rect x="698" y="150" width="40" height="80" fill="#fff" stroke="#000" stroke-width="2"/>
+<text x="688" y="180" text-anchor="end">CARICO</text>
+<text x="688" y="198" font-size="12" text-anchor="end">(relay/LED/solenoide)</text>
+<text x="688" y="216" font-size="12" text-anchor="end">max ~100 mA (NPN)</text>
+<line x1="718" y1="110" x2="610" y2="110" stroke="#000" stroke-width="2"/>
+<text x="540" y="106" font-size="12">+V carico (5..12 V)</text>
+<line x1="718" y1="130" x2="780" y2="130" stroke="#000" stroke-width="2"/>
+<line x1="780" y1="130" x2="780" y2="168" stroke="#000" stroke-width="2"/>
+<line x1="768" y1="168" x2="792" y2="168" stroke="#000" stroke-width="3"/>
+<polygon points="768,196 792,196 780,170" fill="#fff" stroke="#000" stroke-width="2"/>
+<line x1="780" y1="196" x2="780" y2="230" stroke="#000" stroke-width="2"/>
+<line x1="780" y1="230" x2="718" y2="230" stroke="#000" stroke-width="2"/>
+<text x="800" y="188" font-size="12">D1 1N4007</text>
+<text x="745" y="262" font-size="12">D1 obbligatorio se induttivo.</text>
+<text x="745" y="277" font-size="12">Oltre 100 mA: MOSFET</text>
+<text x="745" y="292" font-size="12">logic-level.</text>
+<text x="20" y="495" font-size="12">GND del carico e GND della scheda in comune. GPIO14 = 3.3 V, max ~10 mA: carichi solo tramite Q1.</text>
+<text x="20" y="511" font-size="12">Non premere PRG (GPIO0) durante accensione/reset: entra in modalita' flash.</text>
 </svg>
