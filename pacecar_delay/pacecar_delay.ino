@@ -2,8 +2,8 @@
  * Pacecar - timer di ritardo per Heltec WiFi Kit 8 (ESP8266 + OLED SSD1306 0.91" 128x32)
  *
  * Funzionamento:
- *   - tasto START (PRG onboard, GPIO0) -> dopo X secondi, OUT (GPIO14) = HIGH per 400 ms
- *   - X (0..10 s) si imposta con due pulsanti esterni: PLUS (GPIO12) = +1 s, MINUS (GPIO13) = -1 s
+ *   - tasto START (PRG onboard, GPIO0 = pin D3) -> dopo X secondi, OUT (D8 = GPIO15) = HIGH per 400 ms
+ *   - X (0..10 s) si imposta con due pulsanti esterni: PLUS (D6 = GPIO12) = +1 s, MINUS (D7 = GPIO13) = -1 s
  *   - X e' sempre visibile fisso a sinistra sull'OLED; a destra lo stato
  *   - dopo l'impulso: pausa di 5 s in cui ogni comando e' ignorato, poi si riparte
  *   - durante ritardo/impulso/pausa i tasti +/- sono ignorati
@@ -12,7 +12,8 @@
  * Board: "NodeMCU 1.0 (ESP-12E Module)" oppure il pacchetto Heltec "WiFi Kit 8"; Flash 4MB.
  *
  * Pin OLED (fissi sulla scheda): SDA 4, SCL 5, RST 16.
- * Pin evitati: 15 (deve essere LOW al boot), 2 (LED + strapping), 9/10 (flash), 1/3 (seriale/USB).
+ * Pin evitati: 14/D5 (non esposto su questa scheda), 2 (LED + strapping), 4/5 (OLED), 16 (reset OLED), 1/3 (seriale/USB).
+ * OUT su D8 (GPIO15): al boot deve stare LOW (c'e' un pull-down sulla scheda). Non collegarci pull-up/ingressi a 3.3 V.
  */
 
 #include <Arduino.h>
@@ -24,10 +25,10 @@ constexpr uint8_t OLED_RST = 16, OLED_SCL = 5, OLED_SDA = 4;
 U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, OLED_RST, OLED_SCL, OLED_SDA);
 
 // ---- Pin utente ----
-constexpr uint8_t PIN_START = 0;    // tasto PRG onboard (verso GND). Non tenerlo premuto durante reset/accensione!
-constexpr uint8_t PIN_PLUS  = 12;   // +1 s (verso GND, pull-up interno)
-constexpr uint8_t PIN_MINUS = 13;   // -1 s (verso GND, pull-up interno)
-constexpr uint8_t PIN_OUT   = 14;   // uscita impulso (3.3 V, max ~10 mA: usare un transistor per carichi)
+constexpr uint8_t PIN_START = 0;    // PRG onboard = pin D3 (verso GND). Non tenerlo premuto durante reset/accensione!
+constexpr uint8_t PIN_PLUS  = 12;   // D6: +1 s (verso GND, pull-up interno)
+constexpr uint8_t PIN_MINUS = 13;   // D7: -1 s (verso GND, pull-up interno)
+constexpr uint8_t PIN_OUT   = 15;   // D8: uscita impulso (3.3 V, max ~10 mA: usare un transistor per carichi)
 
 // ---- Temporizzazioni ----
 constexpr uint32_t PULSE_MS    = 400;

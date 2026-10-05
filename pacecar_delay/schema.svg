@@ -5,11 +5,11 @@
 <text x="345" y="85" font-weight="bold">WiFi Kit 8</text>
 <text x="345" y="103" font-size="12">(ESP8266 + OLED 128x32:</text>
 <text x="345" y="119" font-size="12">GPIO 4,5,16 interni)</text>
-<text x="345" y="152">GPIO12 &#x2190; PLUS</text>
-<text x="345" y="232">GPIO13 &#x2190; MINUS</text>
-<text x="345" y="312">GPIO0  PRG = START</text>
+<text x="345" y="152">D6 (GPIO12) &#x2190; PLUS</text>
+<text x="345" y="232">D7 (GPIO13) &#x2190; MINUS</text>
+<text x="345" y="312">D3 (GPIO0) PRG = START</text>
 <text x="345" y="328" font-size="12">(tasto onboard)</text>
-<text x="345" y="392">GPIO14 &#x2192; OUT</text>
+<text x="345" y="392">D8 (GPIO15) &#x2192; OUT</text>
 <text x="345" y="450">GND</text>
 <line x1="330" y1="148" x2="150" y2="148" stroke="#000" stroke-width="2"/>
 <circle cx="150" cy="148" r="3" fill="#fff" stroke="#000"/>
@@ -73,6 +73,6 @@
 <text x="745" y="262" font-size="12">D1 obbligatorio se induttivo.</text>
 <text x="745" y="277" font-size="12">Oltre 100 mA: MOSFET</text>
 <text x="745" y="292" font-size="12">logic-level.</text>
-<text x="20" y="495" font-size="12">GND del carico e GND della scheda in comune. GPIO14 = 3.3 V, max ~10 mA: carichi solo tramite Q1.</text>
-<text x="20" y="511" font-size="12">Non premere PRG (GPIO0) durante accensione/reset: entra in modalita' flash.</text>
+<text x="20" y="495" font-size="12">GND del carico e GND della scheda in comune. D8/GPIO15 = 3.3 V, max ~10 mA: carichi solo tramite Q1.</text>
+<text x="20" y="511" font-size="12">PRG (D3/GPIO0) non premuto all'accensione: entra in flash. D8/GPIO15 deve restare LOW al boot: nessun pull-up su di esso.</text>
 </svg>
