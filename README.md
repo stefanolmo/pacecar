@@ -1,23 +1,26 @@
-# Pacecar - timer di ritardo (Heltec WiFi Kit 8, ESP8266 + OLED 0.91")
+# Pacecar - timer di ritardo con touch (Freenove ESP32-S3 CYD 2.8")
 
-- Sketch: `pacecar_delay/pacecar_delay.ino` (libreria "U8g2", board "NodeMCU 1.0 (ESP-12E)" o pacchetto Heltec)
+- Sketch: `pacecar_delay/pacecar_delay.ino` (display ILI9341; libreria "GFX Library for Arduino", board "ESP32S3 Dev Module")
 - Schema: `pacecar_delay/schema.svg`
 
-| Funzione | GPIO | Note |
-|---|---|---|
-| START | 0 (D3) | tasto PRG onboard; un pulsante esterno su D3-GND funziona in parallelo (non premerlo durante reset/accensione) |
-| +1 s | 12 (D6) | pulsante esterno verso GND (pull-up interno) |
-| -1 s | 13 (D7) | pulsante esterno verso GND |
-| OUT | 15 (D8) | HIGH 400 ms dopo X s; deve essere LOW al boot (pull-down sulla scheda); carichi tramite NPN |
-| OLED | 4, 5, 16 | SDA, SCL, RST (interni) |
+Ciclo: START (touch o pulsante su IO14) -> attesa X s (0..10, impostati con [-]/[+] sul touch) -> OUT alto 400 ms -> pausa 5 s -> pronto.
+X e' sempre visibile fisso al centro del display.
 
-Ciclo: START -> attesa X s (0..10) -> OUT alto 400 ms -> pausa 5 s -> pronto.
-X resta fisso a sinistra sull'OLED, lo stato a destra.
+| Funzione | Pin |
+|---|---|
+| Display SPI | MOSI 11, SCLK 12, MISO 13, CS 10, DC 46, BL 45 |
+| Touch FT6336U (I2C 0x38) | SDA 16, SCL 15, RST 18 (reset condiviso col display), INT 17 non usato |
+| START fisico (opz.) | IO14 verso GND (pull-up interno) |
+| OUT | IO21 |
+| Liberi | IO2, IO3 (strapping: non forzarlo al boot) |
 
-Pin letti dalla serigrafia della scheda (D2, D3, D8, D7, D6, SCL, D0, A0): D5/GPIO14 non e' esposto. La corrispondenza D6=12, D7=13, D8=15 segue la numerazione NodeMCU.
+## Da verificare al primo avvio (non confermato da documentazione ufficiale)
+- Colori invertiti: `LCD_IPS` true/false.
+- Touch specchiato/ruotato: `TOUCH_SWAP_XY`, `TOUCH_FLIP_X`, `TOUCH_FLIP_Y` (con `TOUCH_DEBUG true` si leggono le coordinate su Serial).
+- I pin del touch (SDA16/SCL15/RST18) sono dedotti dalle varianti Freenove note e dal fatto che IO2 e' libero. Se compare "TOUCH NON TROVATO" lo sketch funziona comunque con il pulsante su IO14.
 
 ## Note di sicurezza
-- Radio Wi-Fi spenta all'avvio (`WiFi.mode(WIFI_OFF)`): l'ESP8266 altrimenti si riconnette a reti salvate in flash.
+- Nessun Wi-Fi/BLE/OTA attivo: nessuna superficie di attacco remota.
 - R2 10k (base Q1 -> GND): senza, il pin e' flottante durante reset/flash e puo' attivare il carico.
 - NPN + R1 1k affidabile fino a ~100 mA; oltre usare un MOSFET logic-level. D1 obbligatorio con carichi induttivi.
 - Se un carico bloccato ON e' pericoloso serve un limite hardware (fusibile): il firmware da solo non garantisce l'OFF se si pianta.
