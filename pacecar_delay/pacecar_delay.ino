@@ -1,5 +1,5 @@
 /*
- * Pacecar - timer di ritardo con touch per Freenove ESP32-S3 CYD 2.8" (240x320 IPS, touch capacitivo FT6336U)
+ * Pacecar - timer di ritardo con touch per Freenove ESP32-S3 CYD 2.8" FNK0104B (240x320 IPS ILI9341, touch capacitivo FT6336U)
  *
  * Funzionamento:
  *   - tasto START sul touch (oppure pulsante esterno su IO14) -> dopo X secondi, OUT = HIGH per 400 ms
@@ -8,14 +8,15 @@
  *   - durante ritardo/impulso/pausa i tasti [-] [+] sono disattivati (grigi)
  *
  * Librerie: "GFX Library for Arduino" (moononournation). Il touch FT6336U e' letto via Wire, senza libreria.
- * Board: "ESP32S3 Dev Module", USB CDC On Boot: Enabled, Flash/PSRAM come da scheda Freenove.
+ * Board: "ESP32S3 Dev Module", USB CDC On Boot: Enabled, Flash 16MB, Flash Mode DIO, PSRAM OPI (N16R8).
+ * Pin display/touch da common.ini del porting PlatformIO del tutorial Freenove FNK0104B
+ * (TFT_RST=-1, SPI 40 MHz, ILI9341 con inversione, ordine colori BGR).
  *
  * Pin liberi sul connettore della scheda: IO2, IO3, IO14, IO21 (usati: IO21 = OUT, IO14 = START esterno opzionale).
  *
  * DA VERIFICARE al primo avvio (non confermato da documentazione ufficiale):
  *   - colori invertiti                            -> LCD_IPS true/false
  *   - orientamento del touch                      -> TOUCH_SWAP_XY / TOUCH_FLIP_X / TOUCH_FLIP_Y
- *   - pin I2C/RST del touch (variante SDA16/SCL15/RST18, coerente con IO2 libero)
  */
 
 #include <Arduino.h>
@@ -25,7 +26,7 @@
 // ---- Display ILI9341 (SPI) ----
 constexpr bool   LCD_IPS = true;     // se i colori sono invertiti, mettere false
 constexpr int8_t LCD_MOSI = 11, LCD_SCLK = 12, LCD_MISO = 13, LCD_CS = 10, LCD_DC = 46, LCD_BL = 45;
-constexpr int8_t LCD_RST = 18;       // reset condiviso display + touch
+constexpr int8_t LCD_RST = GFX_NOT_DEFINED;   // il reset del display non e' pilotato da GPIO (TFT_RST=-1)
 
 Arduino_DataBus *bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCLK, LCD_MOSI, LCD_MISO);
 Arduino_GFX *gfx = new Arduino_ILI9341(bus, LCD_RST, 0, LCD_IPS);
@@ -97,8 +98,7 @@ bool probeTouch(int8_t sda, int8_t scl) {
 }
 
 bool initTouch() {
-  if (probeTouch(TOUCH_SDA, TOUCH_SCL)) return true;      // gia' attivo dopo il reset del display
-  pinMode(TOUCH_RST, OUTPUT);                             // altrimenti reset hardware dedicato
+  pinMode(TOUCH_RST, OUTPUT);                             // reset hardware del solo touch
   digitalWrite(TOUCH_RST, LOW);  delay(10);
   digitalWrite(TOUCH_RST, HIGH); delay(120);
   if (probeTouch(TOUCH_SDA, TOUCH_SCL)) return true;
@@ -178,13 +178,12 @@ void setup() {
   btnStartHw.begin();
   if (TOUCH_DEBUG) Serial.begin(115200);
 
-  gfx->begin();
+  gfx->begin(40000000);                                  // 40 MHz: a 80 MHz il display da' immagini corrotte
   gfx->setRotation(1);                                   // landscape 320x240
   gfx->fillScreen(BLACK);
   Rect title = {0, 4, SCREEN_W, 24};
   drawCenteredIn(title, "RITARDO (s)", 2, CYAN);
 
-  delay(150);                                            // il touch riparte dopo il reset condiviso
   touchOk = initTouch();
   if (!touchOk) {
     Rect msg = {0, 220, SCREEN_W, 20};

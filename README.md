@@ -1,4 +1,4 @@
-# Pacecar - timer di ritardo con touch (Freenove ESP32-S3 CYD 2.8")
+# Pacecar - timer di ritardo con touch (Freenove ESP32-S3 CYD 2.8" FNK0104B)
 
 - Sketch: `pacecar_delay/pacecar_delay.ino` (display ILI9341; libreria "GFX Library for Arduino", board "ESP32S3 Dev Module")
 - Schema: `pacecar_delay/schema.svg`
@@ -9,7 +9,7 @@ X e' sempre visibile fisso al centro del display.
 | Funzione | Pin |
 |---|---|
 | Display SPI | MOSI 11, SCLK 12, MISO 13, CS 10, DC 46, BL 45 |
-| Touch FT6336U (I2C 0x38) | SDA 16, SCL 15, RST 18 (reset condiviso col display), INT 17 non usato |
+| Touch FT6336U (I2C 0x38) | SDA 16, SCL 15, RST 18, INT 17 non usato |
 | START fisico (opz.) | IO14 verso GND (pull-up interno) |
 | OUT | IO21 |
 | Liberi | IO2, IO3 (strapping: non forzarlo al boot) |
@@ -17,7 +17,7 @@ X e' sempre visibile fisso al centro del display.
 ## Da verificare al primo avvio (non confermato da documentazione ufficiale)
 - Colori invertiti: `LCD_IPS` true/false.
 - Touch specchiato/ruotato: `TOUCH_SWAP_XY`, `TOUCH_FLIP_X`, `TOUCH_FLIP_Y` (con `TOUCH_DEBUG true` si leggono le coordinate su Serial).
-- I pin del touch (SDA16/SCL15/RST18) sono dedotti dalle varianti Freenove note e dal fatto che IO2 e' libero. Se compare "TOUCH NON TROVATO" lo sketch funziona comunque con il pulsante su IO14.
+- Pin display e touch confermati da `common.ini` del porting PlatformIO del tutorial FNK0104B (ILI9341, TFT_RST=-1, SPI 40 MHz, BGR + inversione, touch SDA16/SCL15/RST18/INT17). Impostazioni board: ESP32S3 Dev Module, Flash 16MB, Flash Mode DIO, PSRAM OPI. Se compare "TOUCH NON TROVATO" lo sketch funziona comunque con il pulsante su IO14.
 
 ## Note di sicurezza
 - Nessun Wi-Fi/BLE/OTA attivo: nessuna superficie di attacco remota.
