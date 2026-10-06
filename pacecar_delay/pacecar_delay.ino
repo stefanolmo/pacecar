@@ -23,6 +23,13 @@
 #include <Wire.h>
 #include <Arduino_GFX_Library.h>
 
+// Colori RGB565 definiti qui: i nomi C_BLACK/C_WHITE/... dipendono dalla versione di Arduino_GFX
+constexpr uint16_t C_BLACK = 0x0000, C_WHITE = 0xFFFF, C_RED = 0xF800, C_GREEN = 0x07E0, C_BLUE = 0x001F;
+constexpr uint16_t C_CYAN = 0x07FF, C_YELLOW = 0xFFE0, C_ORANGE = 0xFD20, C_DARKGREY = 0x4A49, C_LIGHTGREY = 0xC618;
+
+// Definito prima di ogni funzione: il prototipo automatico dell'IDE Arduino ne ha bisogno
+enum State { IDLE, WAITING, PULSING, COOLDOWN };
+
 // ---- Display ILI9341 (SPI) ----
 constexpr bool   LCD_IPS = true;     // se i colori sono invertiti, mettere false
 constexpr int8_t LCD_MOSI = 11, LCD_SCLK = 12, LCD_MISO = 13, LCD_CS = 10, LCD_DC = 46, LCD_BL = 45;
@@ -83,7 +90,6 @@ struct Button {
 };
 Button btnStartHw(PIN_START_HW);
 
-enum State { IDLE, WAITING, PULSING, COOLDOWN };
 State    state = IDLE;
 uint32_t stateStart = 0;
 uint8_t  delayS = 3;
@@ -139,29 +145,29 @@ void drawCenteredIn(const Rect &r, const char *txt, uint8_t size, uint16_t color
 
 void drawButton(const Rect &r, const char *label, uint8_t size, uint16_t fill, uint16_t text) {
   gfx->fillRoundRect(r.x, r.y, r.w, r.h, 10, fill);
-  gfx->drawRoundRect(r.x, r.y, r.w, r.h, 10, WHITE);
+  gfx->drawRoundRect(r.x, r.y, r.w, r.h, 10, C_WHITE);
   drawCenteredIn(r, label, size, text);
 }
 
 void drawAdjustButtons() {
   bool en = (state == IDLE);
-  drawButton(BTN_MINUS, "-", 6, en ? BLUE : DARKGREY, en ? WHITE : LIGHTGREY);
-  drawButton(BTN_PLUS,  "+", 6, en ? BLUE : DARKGREY, en ? WHITE : LIGHTGREY);
+  drawButton(BTN_MINUS, "-", 6, en ? C_BLUE : C_DARKGREY, en ? C_WHITE : C_LIGHTGREY);
+  drawButton(BTN_PLUS,  "+", 6, en ? C_BLUE : C_DARKGREY, en ? C_WHITE : C_LIGHTGREY);
 }
 
 void drawStartButton() {
   switch (state) {
-    case IDLE:    drawButton(BTN_START, "START",     4, GREEN,    BLACK); break;
-    case WAITING: drawButton(BTN_START, "ATTESA...", 4, ORANGE,   BLACK); break;
-    case PULSING: drawButton(BTN_START, "IMPULSO",   4, RED,      WHITE); break;
-    default:      drawButton(BTN_START, "PAUSA",     4, DARKGREY, WHITE); break;
+    case IDLE:    drawButton(BTN_START, "START",     4, C_GREEN,    C_BLACK); break;
+    case WAITING: drawButton(BTN_START, "ATTESA...", 4, C_ORANGE,   C_BLACK); break;
+    case PULSING: drawButton(BTN_START, "IMPULSO",   4, C_RED,      C_WHITE); break;
+    default:      drawButton(BTN_START, "PAUSA",     4, C_DARKGREY, C_WHITE); break;
   }
 }
 
 void drawDelay() {
-  gfx->fillRect(NUM_AREA.x, NUM_AREA.y, NUM_AREA.w, NUM_AREA.h, BLACK);
+  gfx->fillRect(NUM_AREA.x, NUM_AREA.y, NUM_AREA.w, NUM_AREA.h, C_BLACK);
   char buf[4]; snprintf(buf, sizeof(buf), "%u", delayS);
-  drawCenteredIn(NUM_AREA, buf, 10, WHITE);              // 60x80 px per cifra
+  drawCenteredIn(NUM_AREA, buf, 10, C_WHITE);              // 60x80 px per cifra
 }
 
 void setState(State s) {
@@ -180,14 +186,14 @@ void setup() {
 
   gfx->begin(40000000);                                  // 40 MHz: a 80 MHz il display da' immagini corrotte
   gfx->setRotation(1);                                   // landscape 320x240
-  gfx->fillScreen(BLACK);
+  gfx->fillScreen(C_BLACK);
   Rect title = {0, 4, SCREEN_W, 24};
-  drawCenteredIn(title, "RITARDO (s)", 2, CYAN);
+  drawCenteredIn(title, "RITARDO (s)", 2, C_CYAN);
 
   touchOk = initTouch();
   if (!touchOk) {
     Rect msg = {0, 220, SCREEN_W, 20};
-    drawCenteredIn(msg, "TOUCH NON TROVATO - usa IO14", 2, RED);
+    drawCenteredIn(msg, "TOUCH NON TROVATO - usa IO14", 2, C_RED);
   }
   drawDelay();
   drawStartButton();
