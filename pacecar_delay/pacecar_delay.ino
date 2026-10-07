@@ -11,6 +11,10 @@
  *     (non fa piu' nulla, scritte in rosso) fino a quando non si tocca RESET sul display.
  *   - Conta solo una pressione accettata: a ciclo in corso (attesa/impulso/pausa) i tasti sono ignorati
  *     e non vengono contati. Se due tasti sono premuti insieme vale il primo (T1, poi T2, poi T3).
+ *   - Dopo il ciclo completo (ritardo, impulso, pausa di 5 s) i tasti restano disabilitati e al posto dello
+ *     stato compare il bottone "RIPARTENZA" sul display: toccandolo OUT va alto per 400 ms (senza ritardo X);
+ *     finito quell'impulso i tre tasti tornano attivi. La ripartenza non incrementa i conteggi.
+ *     Se il touch non e' disponibile la ripartenza viene saltata (altrimenti il sistema resterebbe bloccato).
  *   - Durante il ciclo, ritardo e limite non sono modificabili ([-] [+] grigi). RESET e' sempre attivo.
  *   - I contatori sono in RAM: si azzerano a ogni riavvio.
  *
@@ -32,11 +36,11 @@
 #include <Arduino_GFX_Library.h>
 
 // Colori RGB565 definiti qui: i nomi BLACK/WHITE/... dipendono dalla versione di Arduino_GFX
-constexpr uint16_t C_BLACK = 0x0000, C_WHITE = 0xFFFF, C_RED = 0xF800, C_BLUE = 0x001F;
+constexpr uint16_t C_BLACK = 0x0000, C_WHITE = 0xFFFF, C_RED = 0xF800, C_GREEN = 0x07E0, C_BLUE = 0x001F;
 constexpr uint16_t C_CYAN = 0x07FF, C_YELLOW = 0xFFE0, C_ORANGE = 0xFD20, C_DARKGREY = 0x4A49, C_LIGHTGREY = 0xC618;
 
 // Tipi definiti prima di ogni funzione: il prototipo automatico dell'IDE Arduino ne ha bisogno
-enum State { IDLE, WAITING, PULSING, COOLDOWN };
+enum State { IDLE, WAITING, PULSING, COOLDOWN, RESTART_WAIT, RESTART_PULSE };
 
 struct Rect { int16_t x, y, w, h; };
 
@@ -210,8 +214,10 @@ void drawStatus() {
   switch (state) {
     case IDLE:    drawButton(STATUS_AREA, "PRONTO",    3, C_DARKGREY, C_WHITE);  break;
     case WAITING: drawButton(STATUS_AREA, "ATTESA...", 3, C_ORANGE,   C_BLACK);  break;
-    case PULSING: drawButton(STATUS_AREA, "IMPULSO",   3, C_RED,      C_WHITE);  break;
-    default:      drawButton(STATUS_AREA, "PAUSA",     3, C_DARKGREY, C_YELLOW); break;
+    case PULSING:
+    case RESTART_PULSE: drawButton(STATUS_AREA, "IMPULSO",    3, C_RED,      C_WHITE);  break;
+    case RESTART_WAIT:  drawButton(STATUS_AREA, "RIPARTENZA", 2, C_GREEN,    C_BLACK);  break;   // bottone attivo
+    default:            drawButton(STATUS_AREA, "PAUSA",      3, C_DARKGREY, C_YELLOW); break;
   }
 }
 
@@ -222,7 +228,7 @@ void resetCounters() {
 void setState(State s) {
   state = s;
   stateStart = millis();
-  digitalWrite(PIN_OUT, s == PULSING ? HIGH : LOW);
+  digitalWrite(PIN_OUT, (s == PULSING || s == RESTART_PULSE) ? HIGH : LOW);
   drawStatus();
   drawAdjustButtons();
 }
@@ -253,7 +259,7 @@ void setup() {
 void loop() {
   static bool     wasDown = false;
   static uint32_t lastPoll = 0;
-  bool tapDMinus = false, tapDPlus = false, tapReset = false;
+  bool tapDMinus = false, tapDPlus = false, tapReset = false, tapRestart = false;
   bool tapLMinus = false, tapLPlus = false;
   bool keyPressed[NUM_KEYS];
 
@@ -267,6 +273,7 @@ void loop() {
       tapDMinus = inside(BTN_D_MINUS, x, y);
       tapDPlus  = inside(BTN_D_PLUS,  x, y);
       tapReset  = inside(BTN_RESET,   x, y);
+      tapRestart = inside(STATUS_AREA, x, y);           // vale solo in RESTART_WAIT
       tapLMinus = inside(BTN_L_MINUS, x, y);
       tapLPlus  = inside(BTN_L_PLUS,  x, y);
     }
@@ -302,7 +309,13 @@ void loop() {
       if (elapsed >= PULSE_MS) setState(COOLDOWN);
       break;
     case COOLDOWN:
-      if (elapsed >= COOLDOWN_MS) setState(IDLE);
+      if (elapsed >= COOLDOWN_MS) setState(touchOk ? RESTART_WAIT : IDLE);   // senza touch niente ripartenza
+      break;
+    case RESTART_WAIT:                                   // tasti ignorati finche' non si tocca RIPARTENZA
+      if (tapRestart) setState(RESTART_PULSE);
+      break;
+    case RESTART_PULSE:
+      if (elapsed >= PULSE_MS) setState(IDLE);           // finito l'impulso i tasti tornano attivi
       break;
   }
 }

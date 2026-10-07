@@ -1,6 +1,6 @@
 # Pacecar - documentazione dell'ultima versione
 
-**Versione:** 3 tasti con ritardo, limite di pressioni comune e conteggi sul display.
+**Versione:** 3 tasti con ritardo, limite di pressioni comune, conteggi sul display e bottone di ripartenza.
 **Scheda:** Freenove ESP32-S3 CYD 2.8" **FNK0104B** (240x320 IPS, driver ILI9341, touch capacitivo FT6336U).
 **File:** `pacecar_delay/pacecar_delay.ino` (sketch), `pacecar_delay/schema.svg` (schema elettrico), `mockup/layout.png` (proposta grafica, non ancora implementata).
 
@@ -14,11 +14,15 @@ Tre pulsanti fisici (T1, T2, T3) avviano lo stesso ciclo su un'unica uscita:
 2. attesa di **X secondi** (0-10, impostabili dal touch);
 3. uscita **IO21 a livello alto per 400 ms**;
 4. **pausa di 5 s** in cui i tasti sono ignorati;
-5. si torna in attesa del prossimo tasto.
+5. compare sul display il bottone **RIPARTENZA** e i tasti restano disabilitati;
+6. toccando RIPARTENZA, **IO21 va alto per 400 ms** subito (senza il ritardo X);
+7. finito quell'impulso i tre tasti tornano attivi.
 
 Ogni tasto ha un **conteggio** delle pressioni accettate. Esiste un **limite unico (1-10)**, uguale per tutti i tasti: quando un tasto raggiunge il limite viene **disabilitato** (non fa piu' nulla) finche' non si tocca **RESET** sul display, che azzera i tre conteggi e li riabilita.
 
 ### Regole precise
+- La ripartenza **non incrementa i conteggi** e non e' limitata. Finche' non viene toccata, i tasti sono ignorati e non contati; RESET resta attivo.
+- Se il touch non e' disponibile (`TOUCH NON TROVATO`) la ripartenza viene **saltata**: dopo la pausa i tasti tornano attivi da soli, altrimenti il sistema resterebbe bloccato.
 - Conta solo una pressione **accettata**: a ciclo in corso (attesa, impulso, pausa) i tasti sono ignorati e **non vengono contati**.
 - Se due tasti sono premuti insieme vale il primo (T1, poi T2, poi T3).
 - Ritardo e limite si modificano **solo a ciclo fermo**; RESET e' sempre attivo e non interrompe il ciclo.
@@ -35,7 +39,7 @@ Schermo in orizzontale 320x240:
 | Sotto | `LIMITE`: [-] valore [+] (comune ai tre tasti) |
 | Tre colonne | T1/IO2, T2/IO3, T3/IO14 con `premute/limite`; in rosso se disabilitato |
 | In basso a sinistra | tasto RESET |
-| In basso a destra | stato: PRONTO, ATTESA..., IMPULSO, PAUSA |
+| In basso a destra | stato: PRONTO, ATTESA..., IMPULSO, PAUSA; a fine ciclo diventa il bottone verde **RIPARTENZA** |
 | Riga finale | `premute / limite`, oppure `TOUCH NON TROVATO` in rosso |
 
 I tasti [-] [+] diventano grigi quando il ciclo e' in corso. Se il touch non viene trovato non si possono cambiare ritardo e limite (restano 3 s e limite 3), ma i tre tasti fisici funzionano.
@@ -94,7 +98,7 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 ## 6. Verifiche effettuate
 
 - Controllo di sintassi senza avvisi (con le librerie sostituite da stub).
-- Simulazione su PC della logica con tempo, tasti e tocchi simulati: ritardo di 3 s e impulso di 400 ms; il tasto al limite non fa piu' nulla; conteggi indipendenti; pressioni durante il ciclo non contate; RESET riabilita tutto; limite 1-10 e ritardo 0-10 rispettati; modifiche bloccate durante il ciclo.
+- Simulazione su PC della logica con tempo, tasti e tocchi simulati: ritardo di 3 s e impulso di 400 ms; il tasto al limite non fa piu' nulla; RIPARTENZA: impulso di 400 ms entro ~25 ms dal tocco, tasti ignorati prima e durante, riattivati dopo, nessun conteggio; conteggi indipendenti; pressioni durante il ciclo non contate; RESET riabilita tutto; limite 1-10 e ritardo 0-10 rispettati; modifiche bloccate durante il ciclo.
 - **Non verificati:** display e touch reali, orientamento del touch, colori, temporizzazione misurata sull'uscita fisica.
 
 ## 7. Sicurezza e limiti
@@ -111,8 +115,9 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 4. Pin Freenove FNK0104B allineati al tutorial (TFT_RST -1, SPI 40 MHz, reset del solo touch su IO18).
 5. Correzione errori di compilazione: `enum State` prima delle funzioni, colori RGB565 definiti nello sketch.
 6. Tre tasti fisici con limite per tasto e conteggi sul display.
-7. **Limite di pressioni unico per tutti i tasti (versione attuale).**
+7. Limite di pressioni unico per tutti i tasti.
 8. Mockup della nuova interfaccia (proposto, non implementato).
+9. **Bottone RIPARTENZA a fine ciclo (versione attuale).**
 
 ## 9. Prossimi passi possibili
 

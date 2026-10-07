@@ -9,6 +9,7 @@
 - Dal touch: ritardo X (0..10 s) con [-]/[+] in alto; un unico limite di pressioni (1..10), uguale per T1, T2 e T3, con i suoi [-]/[+] nella riga LIMITE.
 - Il display mostra per ogni tasto `premute/limite`. Raggiunto il limite il tasto e' disabilitato (rosso) e non fa piu' nulla finche' non si tocca RESET sul display (azzera i tre conteggi).
 - Si conta solo una pressione accettata: durante attesa/impulso/pausa i tasti sono ignorati e non contati. Se due tasti sono premuti insieme vale il primo (T1, T2, T3).
+- Dopo il ciclo completo (ritardo, impulso, pausa di 5 s) i tasti restano disabilitati e al posto dello stato compare il bottone **RIPARTENZA**: toccandolo OUT va alto 400 ms (senza ritardo X) e finito l'impulso i tre tasti tornano attivi. La ripartenza non conta come pressione. Senza touch la ripartenza viene saltata.
 - Ritardo e limite sono modificabili solo a ciclo fermo; RESET e' sempre attivo. I contatori sono in RAM: si azzerano a ogni riavvio.
 
 | Funzione | Pin |
