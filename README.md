@@ -6,10 +6,10 @@
 ## Funzionamento
 - Tre pulsanti fisici T1 (IO2), T2 (IO3), T3 (IO14), verso GND.
 - Pressione accettata -> attesa X secondi -> OUT (IO21) alto 400 ms -> pausa 5 s -> pronto.
-- Dal touch: ritardo X (0..10 s) con [-]/[+] in alto; limite di pressioni (1..10) per ogni tasto con i suoi [-]/[+].
+- Dal touch: ritardo X (0..10 s) con [-]/[+] in alto; un unico limite di pressioni (1..10), uguale per T1, T2 e T3, con i suoi [-]/[+] nella riga LIMITE.
 - Il display mostra per ogni tasto `premute/limite`. Raggiunto il limite il tasto e' disabilitato (rosso) e non fa piu' nulla finche' non si tocca RESET sul display (azzera i tre conteggi).
 - Si conta solo una pressione accettata: durante attesa/impulso/pausa i tasti sono ignorati e non contati. Se due tasti sono premuti insieme vale il primo (T1, T2, T3).
-- Ritardo e limiti sono modificabili solo a ciclo fermo; RESET e' sempre attivo. I contatori sono in RAM: si azzerano a ogni riavvio.
+- Ritardo e limite sono modificabili solo a ciclo fermo; RESET e' sempre attivo. I contatori sono in RAM: si azzerano a ogni riavvio.
 
 | Funzione | Pin |
 |---|---|
@@ -23,7 +23,7 @@ Impostazioni board: ESP32S3 Dev Module, Flash 16MB, Flash Mode DIO, PSRAM OPI, U
 ## Da verificare al primo avvio
 - Colori invertiti: `LCD_IPS` true/false.
 - Touch specchiato/ruotato: `TOUCH_SWAP_XY`, `TOUCH_FLIP_X`, `TOUCH_FLIP_Y` (con `TOUCH_DEBUG true` si leggono le coordinate su Serial).
-- Se compare "TOUCH NON TROVATO" non si possono cambiare ritardo e limiti (restano 3 s e 3 pressioni).
+- Se compare "TOUCH NON TROVATO" non si possono cambiare ritardo e limite (restano 3 s e limite 3).
 - IO3 e' un pin di strapping: T2 non deve essere premuto durante accensione/reset.
 
 ## Note di sicurezza

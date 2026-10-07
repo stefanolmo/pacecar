@@ -6,12 +6,12 @@
  *   - 3 pulsanti fisici T1 (IO2), T2 (IO3), T3 (IO14), verso GND.
  *   - Pressione accettata -> dopo X secondi, OUT (IO21) = HIGH per 400 ms, poi pausa di 5 s.
  *   - X (0..10 s) si imposta dal touch con [-] [+]; sempre visibile fisso in alto.
- *   - Ogni tasto ha un limite di pressioni (1..10), impostato dal touch con i suoi [-] [+].
- *     Il display mostra per ogni tasto "premute/limite". Raggiunto il limite il tasto e' disabilitato
+ *   - Un unico limite di pressioni (1..10), uguale per tutti e tre i tasti, si imposta dal touch con [-] [+].
+ *     Il display mostra per ogni tasto "premute/limite". Raggiunto il limite quel tasto e' disabilitato
  *     (non fa piu' nulla, scritte in rosso) fino a quando non si tocca RESET sul display.
  *   - Conta solo una pressione accettata: a ciclo in corso (attesa/impulso/pausa) i tasti sono ignorati
  *     e non vengono contati. Se due tasti sono premuti insieme vale il primo (T1, poi T2, poi T3).
- *   - Durante il ciclo, ritardo e limiti non sono modificabili ([-] [+] grigi). RESET e' sempre attivo.
+ *   - Durante il ciclo, ritardo e limite non sono modificabili ([-] [+] grigi). RESET e' sempre attivo.
  *   - I contatori sono in RAM: si azzerano a ogni riavvio.
  *
  * Libreria: "GFX Library for Arduino" (moononournation). Il touch FT6336U e' letto via Wire, senza libreria.
@@ -97,10 +97,12 @@ constexpr Rect BTN_D_PLUS  = {226, 4, 48, 40};
 constexpr int16_t COL_X[NUM_KEYS] = {6, 110, 214};
 constexpr Rect TITLE[NUM_KEYS]     = {{6, 52, 100, 18}, {110, 52, 100, 18}, {214, 52, 100, 18}};
 constexpr Rect COUNT[NUM_KEYS]     = {{6, 72, 100, 32}, {110, 72, 100, 32}, {214, 72, 100, 32}};
-constexpr Rect LIM_MINUS[NUM_KEYS] = {{6, 112, 44, 36}, {110, 112, 44, 36}, {214, 112, 44, 36}};
-constexpr Rect LIM_PLUS[NUM_KEYS]  = {{62, 112, 44, 36}, {166, 112, 44, 36}, {270, 112, 44, 36}};
-constexpr Rect BTN_RESET   = {6, 160, 140, 50};
-constexpr Rect STATUS_AREA = {154, 160, 160, 50};
+constexpr Rect LBL_LIMIT   = {6, 112, 100, 40};
+constexpr Rect BTN_L_MINUS = {112, 112, 48, 40};
+constexpr Rect LIM_AREA    = {162, 112, 60, 40};
+constexpr Rect BTN_L_PLUS  = {226, 112, 48, 40};
+constexpr Rect BTN_RESET   = {6, 164, 140, 46};
+constexpr Rect STATUS_AREA = {154, 164, 160, 46};
 constexpr Rect HINT_AREA   = {0, 216, 320, 22};
 
 // ---- Stato ----
@@ -109,7 +111,7 @@ State    state = IDLE;
 uint32_t stateStart = 0;
 uint8_t  delayS = 3;
 uint8_t  pressCount[NUM_KEYS] = {0, 0, 0};
-uint8_t  limitN[NUM_KEYS]     = {3, 3, 3};
+uint8_t  limitN = 3;                       // limite comune a T1, T2, T3
 bool     touchOk = false;
 
 bool inside(const Rect &r, int16_t x, int16_t y) {
@@ -171,6 +173,12 @@ void drawButton(const Rect &r, const char *label, uint8_t size, uint16_t fill, u
   drawCenteredIn(r, label, size, text);
 }
 
+void drawLimit() {
+  gfx->fillRect(LIM_AREA.x, LIM_AREA.y, LIM_AREA.w, LIM_AREA.h, C_BLACK);
+  char buf[4]; snprintf(buf, sizeof(buf), "%u", limitN);
+  drawCenteredIn(LIM_AREA, buf, 4, C_WHITE);
+}
+
 void drawDelay() {
   gfx->fillRect(NUM_AREA.x, NUM_AREA.y, NUM_AREA.w, NUM_AREA.h, C_BLACK);
   char buf[4]; snprintf(buf, sizeof(buf), "%u", delayS);
@@ -179,25 +187,23 @@ void drawDelay() {
 
 // Titolo e "premute/limite" di un tasto; rosso se disabilitato (limite raggiunto)
 void drawKey(uint8_t i) {
-  bool disabled = pressCount[i] >= limitN[i];
+  bool disabled = pressCount[i] >= limitN;
   gfx->fillRect(COL_X[i], 52, 100, 52, C_BLACK);
   char buf[16];
   snprintf(buf, sizeof(buf), "T%u IO%u", (unsigned)(i + 1), (unsigned)KEY_PINS[i]);
   drawCenteredIn(TITLE[i], buf, 2, disabled ? C_RED : C_CYAN);
-  snprintf(buf, sizeof(buf), "%u/%u", (unsigned)pressCount[i], (unsigned)limitN[i]);
+  snprintf(buf, sizeof(buf), "%u/%u", (unsigned)pressCount[i], (unsigned)limitN);
   drawCenteredIn(COUNT[i], buf, 3, disabled ? C_RED : C_WHITE);   // "10/10" = 90 px
 }
 
-// Tasti [-] [+] di ritardo e limiti: attivi solo a ciclo fermo
+// Tasti [-] [+] di ritardo e limite: attivi solo a ciclo fermo
 void drawAdjustButtons() {
   bool en = (state == IDLE);
   uint16_t fill = en ? C_BLUE : C_DARKGREY, text = en ? C_WHITE : C_LIGHTGREY;
   drawButton(BTN_D_MINUS, "-", 4, fill, text);
   drawButton(BTN_D_PLUS,  "+", 4, fill, text);
-  for (uint8_t i = 0; i < NUM_KEYS; i++) {
-    drawButton(LIM_MINUS[i], "-", 3, fill, text);
-    drawButton(LIM_PLUS[i],  "+", 3, fill, text);
-  }
+  drawButton(BTN_L_MINUS, "-", 4, fill, text);
+  drawButton(BTN_L_PLUS,  "+", 4, fill, text);
 }
 
 void drawStatus() {
@@ -231,12 +237,14 @@ void setup() {
   gfx->setRotation(1);                                   // landscape 320x240
   gfx->fillScreen(C_BLACK);
   drawCenteredIn(LBL_DELAY, "RITARDO s", 2, C_CYAN);
+  drawCenteredIn(LBL_LIMIT, "LIMITE", 2, C_CYAN);
 
   touchOk = initTouch();
   if (touchOk) drawCenteredIn(HINT_AREA, "premute / limite", 2, C_LIGHTGREY);
   else         drawCenteredIn(HINT_AREA, "TOUCH NON TROVATO", 2, C_RED);
 
   drawDelay();
+  drawLimit();
   for (uint8_t i = 0; i < NUM_KEYS; i++) drawKey(i);
   drawButton(BTN_RESET, "RESET", 3, C_ORANGE, C_BLACK);
   setState(IDLE);                                        // disegna stato e tasti [-] [+]
@@ -246,8 +254,7 @@ void loop() {
   static bool     wasDown = false;
   static uint32_t lastPoll = 0;
   bool tapDMinus = false, tapDPlus = false, tapReset = false;
-  bool tapLMinus[NUM_KEYS] = {false, false, false};
-  bool tapLPlus[NUM_KEYS]  = {false, false, false};
+  bool tapLMinus = false, tapLPlus = false;
   bool keyPressed[NUM_KEYS];
 
   for (uint8_t i = 0; i < NUM_KEYS; i++) keyPressed[i] = keys[i].pressed();   // sempre letti: la pressione fuori ciclo si scarta
@@ -260,10 +267,8 @@ void loop() {
       tapDMinus = inside(BTN_D_MINUS, x, y);
       tapDPlus  = inside(BTN_D_PLUS,  x, y);
       tapReset  = inside(BTN_RESET,   x, y);
-      for (uint8_t i = 0; i < NUM_KEYS; i++) {
-        tapLMinus[i] = inside(LIM_MINUS[i], x, y);
-        tapLPlus[i]  = inside(LIM_PLUS[i],  x, y);
-      }
+      tapLMinus = inside(BTN_L_MINUS, x, y);
+      tapLPlus  = inside(BTN_L_PLUS,  x, y);
     }
     wasDown = down;
   }
@@ -275,12 +280,14 @@ void loop() {
     case IDLE:
       if (tapDPlus  && delayS < DELAY_MAX_S) { delayS++; drawDelay(); }
       if (tapDMinus && delayS > 0)           { delayS--; drawDelay(); }
-      for (uint8_t i = 0; i < NUM_KEYS; i++) {
-        if (tapLPlus[i]  && limitN[i] < LIMIT_MAX) { limitN[i]++; drawKey(i); }
-        if (tapLMinus[i] && limitN[i] > LIMIT_MIN) { limitN[i]--; drawKey(i); }
+      if (tapLPlus  && limitN < LIMIT_MAX) limitN++;
+      if (tapLMinus && limitN > LIMIT_MIN) limitN--;
+      if (tapLPlus || tapLMinus) {                       // il limite e' comune: ridisegno limite e i tre tasti
+        drawLimit();
+        for (uint8_t i = 0; i < NUM_KEYS; i++) drawKey(i);
       }
       for (uint8_t i = 0; i < NUM_KEYS; i++) {
-        if (keyPressed[i] && pressCount[i] < limitN[i]) {   // tasto abilitato: pressione accettata
+        if (keyPressed[i] && pressCount[i] < limitN) {   // tasto abilitato: pressione accettata
           pressCount[i]++;
           drawKey(i);
           setState(WAITING);
