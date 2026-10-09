@@ -98,6 +98,11 @@ constexpr Rect LBL_DELAY   = {6, 4, 100, 40};
 constexpr Rect BTN_D_MINUS = {112, 4, 48, 40};
 constexpr Rect NUM_AREA    = {162, 4, 60, 40};
 constexpr Rect BTN_D_PLUS  = {226, 4, 48, 40};
+// Zone sensibili dei tasti del ritardo: piu' grandi di quelli disegnati e fino al bordo superiore, perche' vicino
+// al bordo il touch capacitivo e' meno preciso (le coordinate possono uscire dall'area disegnata). Non c'e' nulla
+// di sensibile sopra o accanto a loro.
+constexpr Rect HIT_D_MINUS = {100, 0, 68, 62};
+constexpr Rect HIT_D_PLUS  = {218, 0, 68, 62};
 constexpr int16_t COL_X[NUM_KEYS] = {6, 110, 214};
 constexpr Rect TITLE[NUM_KEYS]     = {{6, 52, 100, 18}, {110, 52, 100, 18}, {214, 52, 100, 18}};
 constexpr Rect COUNT[NUM_KEYS]     = {{6, 72, 100, 32}, {110, 72, 100, 32}, {214, 72, 100, 32}};
@@ -158,6 +163,7 @@ bool readTouch(int16_t &x, int16_t &y) {
   y = constrain(y, 0, SCREEN_H - 1);
   if (TOUCH_FLIP_X) x = SCREEN_W - 1 - x;
   if (TOUCH_FLIP_Y) y = SCREEN_H - 1 - y;
+  if (TOUCH_DEBUG) Serial.printf("touch -> x=%d y=%d\n", x, y);
   return true;
 }
 
@@ -270,8 +276,8 @@ void loop() {
     int16_t x = 0, y = 0;
     bool down = readTouch(x, y);
     if (down && !wasDown) {                              // solo sul fronte di pressione
-      tapDMinus = inside(BTN_D_MINUS, x, y);
-      tapDPlus  = inside(BTN_D_PLUS,  x, y);
+      tapDMinus = inside(HIT_D_MINUS, x, y);
+      tapDPlus  = inside(HIT_D_PLUS,  x, y);
       tapReset  = inside(BTN_RESET,   x, y);
       tapRestart = inside(STATUS_AREA, x, y);           // vale solo in RESTART_WAIT
       tapLMinus = inside(BTN_L_MINUS, x, y);

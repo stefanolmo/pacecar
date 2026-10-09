@@ -91,6 +91,7 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 | Sintomo | Costante nello sketch |
 |---|---|
 | Colori invertiti | `LCD_IPS` true/false |
+| Tasti vicini ai bordi poco sensibili | allargare la zona sensibile (`HIT_D_MINUS`, `HIT_D_PLUS` per il ritardo); con `TOUCH_DEBUG` si vedono le coordinate calcolate |
 | Tocco specchiato o ruotato | `TOUCH_SWAP_XY`, `TOUCH_FLIP_X`, `TOUCH_FLIP_Y` (con `TOUCH_DEBUG` a true le coordinate escono sulla seriale) |
 | Display nero o immagine corrotta | verifica Flash Mode DIO, PSRAM OPI, velocita' SPI (40 MHz) |
 | `TOUCH NON TROVATO` | verifica SDA 16 / SCL 15 / RST 18 |
@@ -117,7 +118,8 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 6. Tre tasti fisici con limite per tasto e conteggi sul display.
 7. Limite di pressioni unico per tutti i tasti.
 8. Mockup della nuova interfaccia (proposto, non implementato).
-9. **Bottone RIPARTENZA a fine ciclo (versione attuale).**
+9. Bottone RIPARTENZA a fine ciclo.
+10. **Zone sensibili piu' grandi per i tasti [-] [+] del ritardo (versione attuale)**: dopo la prova sulla scheda risultavano difficili da toccare perche' vicini al bordo superiore, dove il touch capacitivo e' meno preciso. L'area sensibile ora arriva al bordo dello schermo e si estende sotto il tasto disegnato.
 
 ## 9. Prossimi passi possibili
 
