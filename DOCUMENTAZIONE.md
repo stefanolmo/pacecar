@@ -49,7 +49,8 @@ La nuova grafica proposta (tema scuro, card, due schermate, barra di avanzamento
 
 Per 4 secondi dopo l'accensione la scheda mostra una schermata di avvio, poi passa all'interfaccia. Durante questo tempo il touch viene inizializzato e i tasti non sono letti: un tasto tenuto premuto alla fine dei 4 secondi non conta come pressione. La retroilluminazione si accende solo a immagine disegnata, per evitare lampi di rumore all'avvio.
 
-- **Default:** bandiera a scacchi (due strisce) con la scritta `SAFETY` / `CAR` su due righe (dimensione 6: su una riga sola non entra in 320 px), disegnata da codice. Sotto, in grigio chiaro e a scala 1x2 (larga 174 px, alta 16; a scala 2x2 sarebbe larga 348 px e non entrerebbe), la riga `Stefano Ciurleo 2026 - Beta 1` (costante `SPLASH_CREDIT`). Il testo e' centrato a mano, senza a-capo automatico e con sfondo nero esplicito. Con un'immagine personalizzata (`splash_image.h`) questa riga non compare.
+- **Attuale:** immagine "Carrera Digital - Safety Car" 320x240 (originale in `assets/splash.png`), convertita in `pacecar_delay/splash_image.h`. La scritta con nome e versione e' dentro l'immagine. Per cambiarla basta rieseguire `tools/img2splash.py` con un'altra immagine.
+- **Ripiego, senza `splash_image.h`:** bandiera a scacchi (due strisce) con la scritta `SAFETY` / `CAR` su due righe (dimensione 6: su una riga sola non entra in 320 px), disegnata da codice. Sotto, in grigio chiaro e a scala 1x2 (larga 174 px, alta 16; a scala 2x2 sarebbe larga 348 px e non entrerebbe), la riga `Stefano Ciurleo 2026 - Beta 1` (costante `SPLASH_CREDIT`). Il testo e' centrato a mano, senza a-capo automatico e con sfondo nero esplicito. Con un'immagine personalizzata (`splash_image.h`) questa riga non compare.
 - **Tua immagine:** `python3 tools/img2splash.py immagine.png` (richiede `pip3 install pillow`) crea `pacecar_delay/splash_image.h`, un array RGB565 320x240 (153.600 byte in flash). Lo sketch lo usa automaticamente se il file esiste (`__has_include`). Con `--fit` l'immagine non viene ritagliata e restano bande nere. Per tornare al default si cancella il file.
 - La durata e' la costante `SPLASH_MS` (4000 ms).
 
@@ -134,7 +135,8 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 15. Schermata di avvio di 4 secondi, con immagine personalizzabile.
 16. Scritta di avvio `SAFETY CAR` su due righe, disegno del testo reso piu' robusto.
 17. Riga piccola `Stefano Ciurleo 2026 - Beta 1` sotto la scritta della schermata di avvio.
-18. **Riga di credito disegnata a scala 1x2 invece che 1x1 (versione attuale)**: a scala 1x1 la libreria Arduino_GFX scrive il testo un pixel alla volta e sulla scheda la riga non compariva; le scale diverse da 1x1 usano rettangoli, come tutte le altre scritte dello sketch.
+18. Riga di credito disegnata a scala 1x2 invece che 1x1: a scala 1x1 la libreria Arduino_GFX scrive il testo un pixel alla volta e sulla scheda la riga non compariva; le scale diverse da 1x1 usano rettangoli, come tutte le altre scritte dello sketch.
+19. **Schermata di avvio sostituita dall'immagine "Carrera Digital - Safety Car" (versione attuale)**: convertita con `tools/img2splash.py`, errore di conversione a 16 bit al massimo 7/255 per canale; richiede il file `splash_image.h` accanto allo sketch.
 
 ## 9. Prossimi passi possibili
 
