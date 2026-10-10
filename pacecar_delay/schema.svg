@@ -5,9 +5,9 @@
 <text x="345" y="85" font-weight="bold">FNK0104B</text>
 <text x="345" y="103" font-size="12">(display + touch integrati:</text>
 <text x="345" y="119" font-size="12">GPIO 10-13,45,46 e 15-18)</text>
-<text x="345" y="152">IO2  &#x2190; T1</text>
-<text x="345" y="232">IO3  &#x2190; T2</text>
-<text x="345" y="312">IO14 &#x2190; T3</text>
+<text x="345" y="152">IO2  &#x2190; PILOTA 1</text>
+<text x="345" y="232">IO3  &#x2190; PILOTA 2</text>
+<text x="345" y="312">IO14 &#x2190; PILOTA 3</text>
 <text x="345" y="392">IO21 &#x2192; OUT</text>
 <text x="345" y="450">GND</text>
 <line x1="330" y1="148" x2="150" y2="148" stroke="#000" stroke-width="2"/>
@@ -17,7 +17,7 @@
 <line x1="150" y1="182" x2="150" y2="198" stroke="#000" stroke-width="2"/>
 <line x1="150" y1="198" x2="60" y2="198" stroke="#000" stroke-width="2"/>
 <circle cx="60" cy="198" r="4"/>
-<text x="20" y="142">SW1 T1 (NO)</text>
+<text x="20" y="142">SW1 PILOTA 1 (NO)</text>
 <line x1="330" y1="228" x2="150" y2="228" stroke="#000" stroke-width="2"/>
 <circle cx="150" cy="228" r="3" fill="#fff" stroke="#000"/>
 <line x1="150" y1="228" x2="130" y2="246" stroke="#000" stroke-width="2"/>
@@ -25,7 +25,7 @@
 <line x1="150" y1="262" x2="150" y2="278" stroke="#000" stroke-width="2"/>
 <line x1="150" y1="278" x2="60" y2="278" stroke="#000" stroke-width="2"/>
 <circle cx="60" cy="278" r="4"/>
-<text x="20" y="222">SW2 T2 (NO)</text>
+<text x="20" y="222">SW2 PILOTA 2 (NO)</text>
 <line x1="330" y1="308" x2="150" y2="308" stroke="#000" stroke-width="2"/>
 <circle cx="150" cy="308" r="3" fill="#fff" stroke="#000"/>
 <line x1="150" y1="308" x2="130" y2="326" stroke="#000" stroke-width="2"/>
@@ -33,7 +33,7 @@
 <line x1="150" y1="342" x2="150" y2="358" stroke="#000" stroke-width="2"/>
 <line x1="150" y1="358" x2="60" y2="358" stroke="#000" stroke-width="2"/>
 <circle cx="60" cy="358" r="4"/>
-<text x="20" y="302">SW3 T3 (NO)</text>
+<text x="20" y="302">SW3 PILOTA 3 (NO)</text>
 <line x1="60" y1="198" x2="60" y2="446" stroke="#000" stroke-width="2"/>
 <line x1="60" y1="446" x2="330" y2="446" stroke="#000" stroke-width="2"/>
 <text x="20" y="470" font-size="12">GND comune (pull-up interni: INPUT_PULLUP)</text>
@@ -78,5 +78,5 @@
 <text x="745" y="277" font-size="12">Oltre 100 mA: MOSFET</text>
 <text x="745" y="292" font-size="12">logic-level.</text>
 <text x="20" y="490" font-size="12">GND del carico e GND della scheda in comune. IO21 = 3.3 V, max ~10 mA: carichi solo tramite Q1.</text>
-<text x="20" y="506" font-size="12">IO3 (T2) e' un pin di strapping: non premere T2 durante accensione/reset. Ritardo, limiti e RESET: sul touch.</text>
+<text x="20" y="506" font-size="12">IO3 (PILOTA 2) e' un pin di strapping: non premere durante accensione/reset. Penalita', incidenti e RESET: sul touch.</text>
 </svg>

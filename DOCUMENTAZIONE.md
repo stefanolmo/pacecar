@@ -1,6 +1,6 @@
 # Pacecar - documentazione dell'ultima versione
 
-**Versione:** 3 tasti con ritardo, limite di pressioni comune, conteggi sul display e bottone di ripartenza.
+**Versione:** 3 piloti con penalita', limite di incidenti comune, conteggi sul display e bottone di ripartenza senza pausa.
 **Scheda:** Freenove ESP32-S3 CYD 2.8" **FNK0104B** (240x320 IPS, driver ILI9341, touch capacitivo FT6336U).
 **File:** `pacecar_delay/pacecar_delay.ino` (sketch), `pacecar_delay/schema.svg` (schema elettrico), `mockup/layout.png` (proposta grafica, non ancora implementata).
 
@@ -8,26 +8,25 @@
 
 ## 1. Cosa fa
 
-Tre pulsanti fisici (T1, T2, T3) avviano lo stesso ciclo su un'unica uscita:
+Tre pulsanti fisici (PILOTA 1, 2, 3) avviano lo stesso ciclo su un'unica uscita:
 
 1. pressione accettata di un tasto;
-2. attesa di **X secondi** (0-10, impostabili dal touch);
+2. attesa di **X secondi** = PENALITA' (0-10, impostabili dal touch);
 3. uscita **IO21 a livello alto per 400 ms**;
-4. **pausa di 5 s** in cui i tasti sono ignorati;
-5. compare sul display il bottone **RIPARTENZA** e i tasti restano disabilitati;
-6. toccando RIPARTENZA, **IO21 va alto per 400 ms** subito (senza il ritardo X);
-7. finito quell'impulso i tre tasti tornano attivi.
+4. **subito dopo, senza pausa**, compare sul display il bottone **RIPARTENZA** e i tasti restano disabilitati;
+5. toccando RIPARTENZA, **IO21 va alto per 400 ms** subito (senza il ritardo X);
+6. finito quell'impulso i tre tasti tornano attivi.
 
-Ogni tasto ha un **conteggio** delle pressioni accettate. Esiste un **limite unico (1-10)**, uguale per tutti i tasti: quando un tasto raggiunge il limite viene **disabilitato** (non fa piu' nulla) finche' non si tocca **RESET** sul display, che azzera i tre conteggi e li riabilita.
+Ogni tasto ha un **conteggio** delle pressioni accettate. Esiste un **limite unico di INCIDENTI (1-10)**, uguale per tutti i piloti: quando un tasto raggiunge il limite viene **disabilitato** (non fa piu' nulla) finche' non si tocca **RESET** sul display, che azzera i tre conteggi e li riabilita.
 
 ### Regole precise
 - La ripartenza **non incrementa i conteggi** e non e' limitata. Finche' non viene toccata, i tasti sono ignorati e non contati; RESET resta attivo.
-- Se il touch non e' disponibile (`TOUCH NON TROVATO`) la ripartenza viene **saltata**: dopo la pausa i tasti tornano attivi da soli, altrimenti il sistema resterebbe bloccato.
-- Conta solo una pressione **accettata**: a ciclo in corso (attesa, impulso, pausa) i tasti sono ignorati e **non vengono contati**.
-- Se due tasti sono premuti insieme vale il primo (T1, poi T2, poi T3).
-- Ritardo e limite si modificano **solo a ciclo fermo**; RESET e' sempre attivo e non interrompe il ciclo.
+- Se il touch non e' disponibile (`TOUCH NON TROVATO`) la ripartenza viene **saltata**: dopo l'impulso i tasti tornano attivi da soli, altrimenti il sistema resterebbe bloccato.
+- Conta solo una pressione **accettata**: a ciclo in corso (attesa, impulso) i tasti sono ignorati e **non vengono contati**.
+- Se due tasti sono premuti insieme vale il primo (PILOTA 1, poi 2, poi 3).
+- Penalita' e incidenti si modificano **solo a ciclo fermo**; RESET e' sempre attivo e non interrompe il ciclo.
 - Se si abbassa il limite sotto un conteggio, quel tasto risulta subito disabilitato; rialzandolo si riabilita.
-- I contatori sono in RAM: si **azzerano a ogni riavvio o spegnimento**. Valori iniziali: ritardo 3 s, limite 3.
+- I contatori sono in RAM: si **azzerano a ogni riavvio o spegnimento**. Valori iniziali: penalita' 3 s, limite 3.
 
 ## 2. Interfaccia (versione attuale)
 
@@ -35,14 +34,14 @@ Schermo in orizzontale 320x240:
 
 | Zona | Contenuto |
 |---|---|
-| In alto | `RITARDO s`: [-] valore [+] |
-| Sotto | `LIMITE`: [-] valore [+] (comune ai tre tasti) |
-| Tre colonne | T1/IO2, T2/IO3, T3/IO14 con `premute/limite`; in rosso se disabilitato |
+| In alto | `PENALITA'`: [-] valore [+] |
+| Sotto | `INCIDENTI`: [-] valore [+] (comune ai tre piloti) |
+| Tre colonne | PILOTA 1, PILOTA 2, PILOTA 3 con `premute/limite`; in rosso se disabilitato |
 | In basso a sinistra | tasto RESET |
-| In basso a destra | stato: PRONTO, ATTESA..., IMPULSO, PAUSA; a fine ciclo diventa il bottone verde **RIPARTENZA** |
-| Riga finale | `premute / limite`, oppure `TOUCH NON TROVATO` in rosso |
+| In basso a destra | stato: PRONTO, ATTESA..., IMPULSO; a fine impulso diventa il bottone verde **RIPARTENZA** |
+| Riga finale | vuota; compare `TOUCH NON TROVATO` in rosso solo se il touch manca |
 
-I tasti [-] [+] diventano grigi quando il ciclo e' in corso. Se il touch non viene trovato non si possono cambiare ritardo e limite (restano 3 s e limite 3), ma i tre tasti fisici funzionano.
+I tasti [-] [+] diventano grigi quando il ciclo e' in corso. Se il touch non viene trovato non si possono cambiare penalita' e incidenti (restano 3 s e limite 3), ma i tre tasti fisici funzionano.
 
 La nuova grafica proposta (tema scuro, card, due schermate, barra di avanzamento) e' solo nel mockup `mockup/layout.png`: **non e' ancora nel codice**.
 
@@ -50,9 +49,9 @@ La nuova grafica proposta (tema scuro, card, due schermate, barra di avanzamento
 
 | Funzione | Pin | Note |
 |---|---|---|
-| T1 | IO2 | pulsante verso GND, pull-up interno |
-| T2 | IO3 | pulsante verso GND; **pin di strapping**: non premere durante accensione/reset |
-| T3 | IO14 | pulsante verso GND, pull-up interno |
+| PILOTA 1 | IO2 | pulsante verso GND, pull-up interno |
+| PILOTA 2 | IO3 | pulsante verso GND; **pin di strapping**: non premere durante accensione/reset |
+| PILOTA 3 | IO14 | pulsante verso GND, pull-up interno |
 | OUT | IO21 | 3,3 V, max ~10 mA: i carichi vanno pilotati con un transistor |
 | Display SPI | MOSI 11, SCLK 12, MISO 13, CS 10, DC 46, BL 45, RST -1, SPI 40 MHz | da `common.ini` del porting PlatformIO del tutorial FNK0104B |
 | Touch FT6336U (I2C 0x38) | SDA 16, SCL 15, RST 18, INT 17 (non usato) | idem |
@@ -91,7 +90,7 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 | Sintomo | Costante nello sketch |
 |---|---|
 | Colori invertiti | `LCD_IPS` true/false |
-| Tasti vicini ai bordi poco sensibili | allargare la zona sensibile (`HIT_D_MINUS`, `HIT_D_PLUS` per il ritardo); con `TOUCH_DEBUG` si vedono le coordinate calcolate |
+| Tasti vicini ai bordi poco sensibili | allargare la zona sensibile (`HIT_D_MINUS`, `HIT_D_PLUS` per la penalita'); con `TOUCH_DEBUG` si vedono le coordinate calcolate |
 | Tocco specchiato o ruotato | `TOUCH_SWAP_XY`, `TOUCH_FLIP_X`, `TOUCH_FLIP_Y` (con `TOUCH_DEBUG` a true le coordinate escono sulla seriale) |
 | Display nero o immagine corrotta | verifica Flash Mode DIO, PSRAM OPI, velocita' SPI (40 MHz) |
 | `TOUCH NON TROVATO` | verifica SDA 16 / SCL 15 / RST 18 |
@@ -119,7 +118,8 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 7. Limite di pressioni unico per tutti i tasti.
 8. Mockup della nuova interfaccia (proposto, non implementato).
 9. Bottone RIPARTENZA a fine ciclo.
-10. **Zone sensibili piu' grandi per i tasti [-] [+] del ritardo (versione attuale)**: dopo la prova sulla scheda risultavano difficili da toccare perche' vicini al bordo superiore, dove il touch capacitivo e' meno preciso. L'area sensibile ora arriva al bordo dello schermo e si estende sotto il tasto disegnato.
+10. Zone sensibili piu' grandi per i tasti [-] [+] della penalita': dopo la prova sulla scheda risultavano difficili da toccare perche' vicini al bordo superiore, dove il touch capacitivo e' meno preciso. L'area sensibile ora arriva al bordo dello schermo e si estende sotto il tasto disegnato.
+11. **Rinomina e ripartenza senza pausa (versione attuale)**: etichette PENALITA', INCIDENTI, PILOTA 1/2/3; tolta la scritta in basso `premute / limite`; tolta la pausa di 5 s: RIPARTENZA compare subito dopo l'impulso.
 
 ## 9. Prossimi passi possibili
 

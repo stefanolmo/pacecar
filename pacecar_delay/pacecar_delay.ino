@@ -1,17 +1,17 @@
 /*
- * Pacecar - 3 tasti con ritardo e limite di pressioni, per Freenove ESP32-S3 CYD 2.8" FNK0104B
+ * Pacecar - 3 piloti con penalita' e limite di incidenti, per Freenove ESP32-S3 CYD 2.8" FNK0104B
  * (240x320 IPS ILI9341, touch capacitivo FT6336U)
  *
  * Funzionamento:
- *   - 3 pulsanti fisici T1 (IO2), T2 (IO3), T3 (IO14), verso GND.
- *   - Pressione accettata -> dopo X secondi, OUT (IO21) = HIGH per 400 ms, poi pausa di 5 s.
- *   - X (0..10 s) si imposta dal touch con [-] [+]; sempre visibile fisso in alto.
- *   - Un unico limite di pressioni (1..10), uguale per tutti e tre i tasti, si imposta dal touch con [-] [+].
- *     Il display mostra per ogni tasto "premute/limite". Raggiunto il limite quel tasto e' disabilitato
+ *   - 3 pulsanti fisici PILOTA 1 (IO2), PILOTA 2 (IO3), PILOTA 3 (IO14), verso GND.
+ *   - Pressione accettata -> dopo X secondi (PENALITA'), OUT (IO21) = HIGH per 400 ms.
+ *   - PENALITA' (0..10 s) si imposta dal touch con [-] [+]; sempre visibile fisso in alto.
+ *   - Un unico limite di INCIDENTI (1..10), uguale per tutti e tre i piloti, si imposta dal touch con [-] [+].
+ *     Il display mostra per ogni pilota "premute/limite". Raggiunto il limite quel tasto e' disabilitato
  *     (non fa piu' nulla, scritte in rosso) fino a quando non si tocca RESET sul display.
- *   - Conta solo una pressione accettata: a ciclo in corso (attesa/impulso/pausa) i tasti sono ignorati
- *     e non vengono contati. Se due tasti sono premuti insieme vale il primo (T1, poi T2, poi T3).
- *   - Dopo il ciclo completo (ritardo, impulso, pausa di 5 s) i tasti restano disabilitati e al posto dello
+ *   - Conta solo una pressione accettata: a ciclo in corso (attesa/impulso) i tasti sono ignorati
+ *     e non vengono contati. Se due tasti sono premuti insieme vale il primo (PILOTA 1, poi 2, poi 3).
+ *   - Subito dopo l'impulso (nessuna pausa) i tasti restano disabilitati e al posto dello
  *     stato compare il bottone "RIPARTENZA" sul display: toccandolo OUT va alto per 400 ms (senza ritardo X);
  *     finito quell'impulso i tre tasti tornano attivi. La ripartenza non incrementa i conteggi.
  *     Se il touch non e' disponibile la ripartenza viene saltata (altrimenti il sistema resterebbe bloccato).
@@ -24,7 +24,7 @@
  * (TFT_RST=-1, SPI 40 MHz, ILI9341 con inversione, ordine colori BGR).
  *
  * Pin liberi sul connettore: IO2, IO3, IO14, IO21 (tutti usati). IO3 e' un pin di strapping:
- * il pulsante T2 non deve essere premuto durante accensione/reset.
+ * il pulsante del PILOTA 2 non deve essere premuto durante accensione/reset.
  *
  * DA VERIFICARE al primo avvio:
  *   - colori invertiti       -> LCD_IPS true/false
@@ -37,10 +37,10 @@
 
 // Colori RGB565 definiti qui: i nomi BLACK/WHITE/... dipendono dalla versione di Arduino_GFX
 constexpr uint16_t C_BLACK = 0x0000, C_WHITE = 0xFFFF, C_RED = 0xF800, C_GREEN = 0x07E0, C_BLUE = 0x001F;
-constexpr uint16_t C_CYAN = 0x07FF, C_YELLOW = 0xFFE0, C_ORANGE = 0xFD20, C_DARKGREY = 0x4A49, C_LIGHTGREY = 0xC618;
+constexpr uint16_t C_CYAN = 0x07FF, C_ORANGE = 0xFD20, C_DARKGREY = 0x4A49, C_LIGHTGREY = 0xC618;
 
 // Tipi definiti prima di ogni funzione: il prototipo automatico dell'IDE Arduino ne ha bisogno
-enum State { IDLE, WAITING, PULSING, COOLDOWN, RESTART_WAIT, RESTART_PULSE };
+enum State { IDLE, WAITING, PULSING, RESTART_WAIT, RESTART_PULSE };
 
 struct Rect { int16_t x, y, w, h; };
 
@@ -80,12 +80,11 @@ constexpr bool TOUCH_DEBUG   = false;   // true: stampa coordinate su Serial per
 
 // ---- Pin utente ----
 constexpr uint8_t NUM_KEYS = 3;
-constexpr uint8_t KEY_PINS[NUM_KEYS] = {2, 3, 14};   // T1=IO2, T2=IO3, T3=IO14 (verso GND, pull-up interno)
+constexpr uint8_t KEY_PINS[NUM_KEYS] = {2, 3, 14};   // PILOTA 1=IO2, 2=IO3, 3=IO14 (verso GND, pull-up interno)
 constexpr uint8_t PIN_OUT = 21;                      // IO21: uscita impulso (3.3 V, max ~10 mA: usare un transistor)
 
 // ---- Temporizzazioni e limiti ----
 constexpr uint32_t PULSE_MS      = 400;
-constexpr uint32_t COOLDOWN_MS   = 5000;
 constexpr uint32_t TOUCH_POLL_MS = 25;
 constexpr uint8_t  DELAY_MAX_S   = 10;
 constexpr uint8_t  LIMIT_MIN     = 1;
@@ -94,7 +93,7 @@ constexpr uint8_t  LIMIT_MAX     = 10;
 constexpr int16_t SCREEN_W = 320, SCREEN_H = 240;    // landscape (rotation 1)
 
 // ---- Layout (320x240) ----
-constexpr Rect LBL_DELAY   = {6, 4, 100, 40};
+constexpr Rect LBL_DELAY   = {0, 4, 110, 40};
 constexpr Rect BTN_D_MINUS = {112, 4, 48, 40};
 constexpr Rect NUM_AREA    = {162, 4, 60, 40};
 constexpr Rect BTN_D_PLUS  = {226, 4, 48, 40};
@@ -106,7 +105,7 @@ constexpr Rect HIT_D_PLUS  = {218, 0, 68, 62};
 constexpr int16_t COL_X[NUM_KEYS] = {6, 110, 214};
 constexpr Rect TITLE[NUM_KEYS]     = {{6, 52, 100, 18}, {110, 52, 100, 18}, {214, 52, 100, 18}};
 constexpr Rect COUNT[NUM_KEYS]     = {{6, 72, 100, 32}, {110, 72, 100, 32}, {214, 72, 100, 32}};
-constexpr Rect LBL_LIMIT   = {6, 112, 100, 40};
+constexpr Rect LBL_LIMIT   = {0, 112, 110, 40};
 constexpr Rect BTN_L_MINUS = {112, 112, 48, 40};
 constexpr Rect LIM_AREA    = {162, 112, 60, 40};
 constexpr Rect BTN_L_PLUS  = {226, 112, 48, 40};
@@ -120,7 +119,7 @@ State    state = IDLE;
 uint32_t stateStart = 0;
 uint8_t  delayS = 3;
 uint8_t  pressCount[NUM_KEYS] = {0, 0, 0};
-uint8_t  limitN = 3;                       // limite comune a T1, T2, T3
+uint8_t  limitN = 3;                       // limite comune ai tre piloti
 bool     touchOk = false;
 
 bool inside(const Rect &r, int16_t x, int16_t y) {
@@ -195,12 +194,12 @@ void drawDelay() {
   drawCenteredIn(NUM_AREA, buf, 4, C_WHITE);             // 24x32 px per cifra
 }
 
-// Titolo e "premute/limite" di un tasto; rosso se disabilitato (limite raggiunto)
+// Nome pilota e "premute/limite"; rosso se disabilitato (limite raggiunto)
 void drawKey(uint8_t i) {
   bool disabled = pressCount[i] >= limitN;
   gfx->fillRect(COL_X[i], 52, 100, 52, C_BLACK);
   char buf[16];
-  snprintf(buf, sizeof(buf), "T%u IO%u", (unsigned)(i + 1), (unsigned)KEY_PINS[i]);
+  snprintf(buf, sizeof(buf), "PILOTA %u", (unsigned)(i + 1));
   drawCenteredIn(TITLE[i], buf, 2, disabled ? C_RED : C_CYAN);
   snprintf(buf, sizeof(buf), "%u/%u", (unsigned)pressCount[i], (unsigned)limitN);
   drawCenteredIn(COUNT[i], buf, 3, disabled ? C_RED : C_WHITE);   // "10/10" = 90 px
@@ -223,7 +222,6 @@ void drawStatus() {
     case PULSING:
     case RESTART_PULSE: drawButton(STATUS_AREA, "IMPULSO",    3, C_RED,      C_WHITE);  break;
     case RESTART_WAIT:  drawButton(STATUS_AREA, "RIPARTENZA", 2, C_GREEN,    C_BLACK);  break;   // bottone attivo
-    default:            drawButton(STATUS_AREA, "PAUSA",      3, C_DARKGREY, C_YELLOW); break;
   }
 }
 
@@ -248,12 +246,11 @@ void setup() {
   gfx->begin(40000000);                                  // 40 MHz: a 80 MHz il display da' immagini corrotte
   gfx->setRotation(1);                                   // landscape 320x240
   gfx->fillScreen(C_BLACK);
-  drawCenteredIn(LBL_DELAY, "RITARDO s", 2, C_CYAN);
-  drawCenteredIn(LBL_LIMIT, "LIMITE", 2, C_CYAN);
+  drawCenteredIn(LBL_DELAY, "PENALITA'", 2, C_CYAN);
+  drawCenteredIn(LBL_LIMIT, "INCIDENTI", 2, C_CYAN);
 
   touchOk = initTouch();
-  if (touchOk) drawCenteredIn(HINT_AREA, "premute / limite", 2, C_LIGHTGREY);
-  else         drawCenteredIn(HINT_AREA, "TOUCH NON TROVATO", 2, C_RED);
+  if (!touchOk) drawCenteredIn(HINT_AREA, "TOUCH NON TROVATO", 2, C_RED);
 
   drawDelay();
   drawLimit();
@@ -312,10 +309,7 @@ void loop() {
       if (elapsed >= (uint32_t)delayS * 1000UL) setState(PULSING);
       break;
     case PULSING:
-      if (elapsed >= PULSE_MS) setState(COOLDOWN);
-      break;
-    case COOLDOWN:
-      if (elapsed >= COOLDOWN_MS) setState(touchOk ? RESTART_WAIT : IDLE);   // senza touch niente ripartenza
+      if (elapsed >= PULSE_MS) setState(touchOk ? RESTART_WAIT : IDLE);   // senza touch niente ripartenza
       break;
     case RESTART_WAIT:                                   // tasti ignorati finche' non si tocca RIPARTENZA
       if (tapRestart) setState(RESTART_PULSE);
