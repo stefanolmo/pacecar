@@ -95,7 +95,7 @@ constexpr uint8_t PIN_OUT = 21;                      // IO21: uscita impulso (3.
 constexpr uint32_t PULSE_MS      = 400;
 constexpr uint32_t TOUCH_POLL_MS = 25;
 constexpr uint32_t SPLASH_MS     = 4000;   // durata della schermata di avvio
-constexpr const char *SPLASH_CREDIT = "Stefano Ciurleo 2026 - Beta 1";   // riga piccola sotto SAFETY CAR (max ~53 caratteri a dimensione 1)
+constexpr const char *SPLASH_CREDIT = "Stefano Ciurleo 2026 - Beta 1";   // riga piccola sotto SAFETY CAR (max 53 caratteri a scala orizzontale 1)
 constexpr uint8_t  DELAY_MAX_S   = 10;
 constexpr uint8_t  LIMIT_MIN     = 1;
 constexpr uint8_t  LIMIT_MAX     = 10;
@@ -235,12 +235,14 @@ void drawStatus() {
   }
 }
 
-// Testo del font integrato (6x8 px per carattere x dimensione), centrato in orizzontale.
-// Posizione calcolata a mano, senza a-capo automatico, con sfondo nero esplicito.
-void drawBigText(const char *txt, int16_t y, uint8_t size, uint16_t color) {
-  int16_t w = (int16_t)strlen(txt) * 6 * size;
+// Testo del font integrato (6x8 px per carattere, per la scala), centrato in orizzontale.
+// Scala x e y separate. Posizione calcolata a mano, senza a-capo automatico, con sfondo nero esplicito.
+// NB: la scala 1x1 la libreria la disegna pixel per pixel (writePixelPreclipped), le altre con rettangoli
+// (writeFillRect): per i testi piccoli si usa 1x2 (stretto e alto), che passa dal percorso a rettangoli.
+void drawBigText(const char *txt, int16_t y, uint8_t sx, uint8_t sy, uint16_t color) {
+  int16_t w = (int16_t)strlen(txt) * 6 * sx;
   gfx->setTextWrap(false);
-  gfx->setTextSize(size);
+  gfx->setTextSize(sx, sy, 0);
   gfx->setTextColor(color, C_BLACK);
   gfx->setCursor((SCREEN_W - w) / 2, y);
   gfx->print(txt);
@@ -258,9 +260,9 @@ void drawSplash() {
       gfx->fillRect(x, y, 20, 20, c);
       gfx->fillRect(x, SCREEN_H - 40 + y, 20, 20, c);
     }
-  drawBigText("SAFETY", 68, 6, C_WHITE);     // due righe: su una sola a dimensione 6 non entra (360 px su 320)
-  drawBigText("CAR", 124, 6, C_WHITE);
-  drawBigText(SPLASH_CREDIT, 182, 1, C_LIGHTGREY);   // dimensione 1: a dimensione 2 sarebbe larga 348 px su 320
+  drawBigText("SAFETY", 68, 6, 6, C_WHITE);     // due righe: su una sola a dimensione 6 non entra (360 px su 320)
+  drawBigText("CAR", 124, 6, 6, C_WHITE);
+  drawBigText(SPLASH_CREDIT, 178, 1, 2, C_LIGHTGREY);   // 1x2: larga 174 px (a 2x2 sarebbe 348 px su 320), alta 16
 #endif
 }
 
