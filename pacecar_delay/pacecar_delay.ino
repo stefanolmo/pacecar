@@ -18,7 +18,7 @@
  *   - Durante il ciclo, ritardo e limite non sono modificabili ([-] [+] grigi). RESET e' sempre attivo.
  *   - I contatori sono in RAM: si azzerano a ogni riavvio.
  *   - All'accensione mostra per 4 secondi una schermata di avvio: l'immagine in splash_image.h se esiste
- *     (si crea con tools/img2splash.py), altrimenti bandiera a scacchi con la scritta SAFETY CAR.
+ *     (si crea con tools/img2splash.py), altrimenti bandiera a scacchi con la scritta SAFETY CAR e una riga piccola con il nome e la versione.
  *
  * Libreria: "GFX Library for Arduino" (moononournation). Il touch FT6336U e' letto via Wire, senza libreria.
  * Board: "ESP32S3 Dev Module", USB CDC On Boot: Enabled, Flash 16MB, Flash Mode DIO, PSRAM OPI (N16R8).
@@ -95,6 +95,7 @@ constexpr uint8_t PIN_OUT = 21;                      // IO21: uscita impulso (3.
 constexpr uint32_t PULSE_MS      = 400;
 constexpr uint32_t TOUCH_POLL_MS = 25;
 constexpr uint32_t SPLASH_MS     = 4000;   // durata della schermata di avvio
+constexpr const char *SPLASH_CREDIT = "Stefano Ciurleo 2026 - Beta 1";   // riga piccola sotto SAFETY CAR (max ~53 caratteri a dimensione 1)
 constexpr uint8_t  DELAY_MAX_S   = 10;
 constexpr uint8_t  LIMIT_MIN     = 1;
 constexpr uint8_t  LIMIT_MAX     = 10;
@@ -259,6 +260,7 @@ void drawSplash() {
     }
   drawBigText("SAFETY", 68, 6, C_WHITE);     // due righe: su una sola a dimensione 6 non entra (360 px su 320)
   drawBigText("CAR", 124, 6, C_WHITE);
+  drawBigText(SPLASH_CREDIT, 182, 1, C_LIGHTGREY);   // dimensione 1: a dimensione 2 sarebbe larga 348 px su 320
 #endif
 }
 

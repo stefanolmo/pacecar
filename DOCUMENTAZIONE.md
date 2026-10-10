@@ -49,7 +49,7 @@ La nuova grafica proposta (tema scuro, card, due schermate, barra di avanzamento
 
 Per 4 secondi dopo l'accensione la scheda mostra una schermata di avvio, poi passa all'interfaccia. Durante questo tempo il touch viene inizializzato e i tasti non sono letti: un tasto tenuto premuto alla fine dei 4 secondi non conta come pressione. La retroilluminazione si accende solo a immagine disegnata, per evitare lampi di rumore all'avvio.
 
-- **Default:** bandiera a scacchi (due strisce) con la scritta `SAFETY` / `CAR` su due righe (dimensione 6: su una riga sola non entra in 320 px), disegnata da codice. Il testo e' centrato a mano, senza a-capo automatico e con sfondo nero esplicito.
+- **Default:** bandiera a scacchi (due strisce) con la scritta `SAFETY` / `CAR` su due righe (dimensione 6: su una riga sola non entra in 320 px), disegnata da codice. Sotto, in grigio chiaro e a dimensione 1 (174 px di larghezza; a dimensione 2 sarebbe larga 348 px e non entrerebbe), la riga `Stefano Ciurleo 2026 - Beta 1` (costante `SPLASH_CREDIT`). Il testo e' centrato a mano, senza a-capo automatico e con sfondo nero esplicito. Con un'immagine personalizzata (`splash_image.h`) questa riga non compare.
 - **Tua immagine:** `python3 tools/img2splash.py immagine.png` (richiede `pip3 install pillow`) crea `pacecar_delay/splash_image.h`, un array RGB565 320x240 (153.600 byte in flash). Lo sketch lo usa automaticamente se il file esiste (`__has_include`). Con `--fit` l'immagine non viene ritagliata e restano bande nere. Per tornare al default si cancella il file.
 - La durata e' la costante `SPLASH_MS` (4000 ms).
 
@@ -132,7 +132,8 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 13. Scritte `STOP!` (impulso dopo la penalita') e `START!` (impulso dopo RIPARTENZA) al posto di `IMPULSO`.
 14. Stato a riposo `RACE` al posto di `PRONTO`.
 15. Schermata di avvio di 4 secondi, con immagine personalizzabile.
-16. **Scritta di avvio `SAFETY CAR` su due righe, disegno del testo reso piu' robusto (versione attuale)**.
+16. Scritta di avvio `SAFETY CAR` su due righe, disegno del testo reso piu' robusto.
+17. **Riga piccola `Stefano Ciurleo 2026 - Beta 1` sotto la scritta della schermata di avvio (versione attuale)**.
 
 ## 9. Prossimi passi possibili
 
