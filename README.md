@@ -22,7 +22,7 @@
 Impostazioni board: ESP32S3 Dev Module, Flash 16MB, Flash Mode DIO, PSRAM OPI, USB CDC On Boot Enabled.
 
 ## Schermata di avvio (4 secondi)
-All'accensione lo sketch mostra per 4 secondi una schermata e poi passa all'interfaccia. Di default e' una bandiera a scacchi con la scritta PACECAR, disegnata da codice. Per usare una tua immagine:
+All'accensione lo sketch mostra per 4 secondi una schermata e poi passa all'interfaccia. Di default e' una bandiera a scacchi con la scritta SAFETY CAR su due righe, disegnata da codice. Per usare una tua immagine:
 1. `pip3 install pillow`
 2. `python3 tools/img2splash.py la_tua_immagine.png` (aggiungi `--fit` per non ritagliarla): crea `pacecar_delay/splash_image.h` (320x240, circa 150 KB in flash).
 3. Ricompila e carica lo sketch. Per tornare alla schermata di default cancella `splash_image.h`.

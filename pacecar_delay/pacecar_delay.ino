@@ -18,7 +18,7 @@
  *   - Durante il ciclo, ritardo e limite non sono modificabili ([-] [+] grigi). RESET e' sempre attivo.
  *   - I contatori sono in RAM: si azzerano a ogni riavvio.
  *   - All'accensione mostra per 4 secondi una schermata di avvio: l'immagine in splash_image.h se esiste
- *     (si crea con tools/img2splash.py), altrimenti una schermata disegnata da codice.
+ *     (si crea con tools/img2splash.py), altrimenti bandiera a scacchi con la scritta SAFETY CAR.
  *
  * Libreria: "GFX Library for Arduino" (moononournation). Il touch FT6336U e' letto via Wire, senza libreria.
  * Board: "ESP32S3 Dev Module", USB CDC On Boot: Enabled, Flash 16MB, Flash Mode DIO, PSRAM OPI (N16R8).
@@ -34,6 +34,7 @@
  */
 
 #include <Arduino.h>
+#include <string.h>
 #include <Wire.h>
 #include <Arduino_GFX_Library.h>
 
@@ -233,7 +234,18 @@ void drawStatus() {
   }
 }
 
-// Schermata di avvio: immagine da splash_image.h, oppure bandiera a scacchi con il nome
+// Testo del font integrato (6x8 px per carattere x dimensione), centrato in orizzontale.
+// Posizione calcolata a mano, senza a-capo automatico, con sfondo nero esplicito.
+void drawBigText(const char *txt, int16_t y, uint8_t size, uint16_t color) {
+  int16_t w = (int16_t)strlen(txt) * 6 * size;
+  gfx->setTextWrap(false);
+  gfx->setTextSize(size);
+  gfx->setTextColor(color, C_BLACK);
+  gfx->setCursor((SCREEN_W - w) / 2, y);
+  gfx->print(txt);
+}
+
+// Schermata di avvio: immagine da splash_image.h, oppure bandiera a scacchi con la scritta SAFETY CAR
 void drawSplash() {
 #ifdef HAS_SPLASH_IMAGE
   gfx->draw16bitRGBBitmap(0, 0, SPLASH_IMG, SCREEN_W, SCREEN_H);
@@ -245,8 +257,8 @@ void drawSplash() {
       gfx->fillRect(x, y, 20, 20, c);
       gfx->fillRect(x, SCREEN_H - 40 + y, 20, 20, c);
     }
-  Rect name = {0, 80, SCREEN_W, 80};
-  drawCenteredIn(name, "PACECAR", 6, C_WHITE);
+  drawBigText("SAFETY", 68, 6, C_WHITE);     // due righe: su una sola a dimensione 6 non entra (360 px su 320)
+  drawBigText("CAR", 124, 6, C_WHITE);
 #endif
 }
 
