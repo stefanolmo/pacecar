@@ -109,8 +109,8 @@ constexpr Rect LBL_LIMIT   = {0, 112, 110, 40};
 constexpr Rect BTN_L_MINUS = {112, 112, 48, 40};
 constexpr Rect LIM_AREA    = {162, 112, 60, 40};
 constexpr Rect BTN_L_PLUS  = {226, 112, 48, 40};
-constexpr Rect BTN_RESET   = {6, 164, 140, 46};
-constexpr Rect STATUS_AREA = {154, 164, 160, 46};
+constexpr Rect BTN_RESET   = {6, 164, 92, 46};
+constexpr Rect STATUS_AREA = {106, 164, 208, 46};
 constexpr Rect HINT_AREA   = {0, 216, 320, 22};
 
 // ---- Stato ----
@@ -218,10 +218,10 @@ void drawAdjustButtons() {
 void drawStatus() {
   switch (state) {
     case IDLE:    drawButton(STATUS_AREA, "PRONTO",    3, C_DARKGREY, C_WHITE);  break;
-    case WAITING: drawButton(STATUS_AREA, "ATTESA...", 3, C_ORANGE,   C_BLACK);  break;
+    case WAITING: drawButton(STATUS_AREA, "Safety Car!", 2, C_ORANGE,  C_BLACK);  break;
     case PULSING:
     case RESTART_PULSE: drawButton(STATUS_AREA, "IMPULSO",    3, C_RED,      C_WHITE);  break;
-    case RESTART_WAIT:  drawButton(STATUS_AREA, "RIPARTENZA", 2, C_GREEN,    C_BLACK);  break;   // bottone attivo
+    case RESTART_WAIT:  drawButton(STATUS_AREA, "RIPARTENZA", 3, C_GREEN,    C_BLACK);  break;   // bottone attivo
   }
 }
 
@@ -255,7 +255,7 @@ void setup() {
   drawDelay();
   drawLimit();
   for (uint8_t i = 0; i < NUM_KEYS; i++) drawKey(i);
-  drawButton(BTN_RESET, "RESET", 3, C_ORANGE, C_BLACK);
+  drawButton(BTN_RESET, "RESET", 2, C_ORANGE, C_BLACK);
   setState(IDLE);                                        // disegna stato e tasti [-] [+]
 }
 
