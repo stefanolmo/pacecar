@@ -217,7 +217,7 @@ void drawAdjustButtons() {
 
 void drawStatus() {
   switch (state) {
-    case IDLE:    drawButton(STATUS_AREA, "PRONTO",    3, C_DARKGREY, C_WHITE);  break;
+    case IDLE:    drawButton(STATUS_AREA, "RACE",      3, C_DARKGREY, C_WHITE);  break;
     case WAITING: drawButton(STATUS_AREA, "Safety Car!", 2, C_ORANGE,  C_BLACK);  break;
     case PULSING:       drawButton(STATUS_AREA, "STOP!",      3, C_RED,      C_WHITE);  break;   // impulso dopo la penalita'
     case RESTART_PULSE: drawButton(STATUS_AREA, "START!",     3, C_GREEN,    C_BLACK);  break;   // impulso dopo RIPARTENZA
