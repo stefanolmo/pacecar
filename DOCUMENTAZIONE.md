@@ -38,7 +38,7 @@ Schermo in orizzontale 320x240:
 | Sotto | `INCIDENTI`: [-] valore [+] (comune ai tre piloti) |
 | Tre colonne | PILOTA 1, PILOTA 2, PILOTA 3 con `premute/limite`; in rosso se disabilitato |
 | In basso a sinistra | tasto RESET (stretto, 92 px) |
-| In basso a destra | stato: PRONTO, Safety Car! (durante la penalita'), IMPULSO; a fine impulso diventa il bottone verde **RIPARTENZA** |
+| In basso a destra | stato: PRONTO, Safety Car! (durante la penalita'), STOP! (impulso dopo la penalita'), poi il bottone verde **RIPARTENZA**; dopo averlo toccato START! (impulso di ripartenza) |
 | Riga finale | vuota; compare `TOUCH NON TROVATO` in rosso solo se il touch manca |
 
 I tasti [-] [+] diventano grigi quando il ciclo e' in corso. Se il touch non viene trovato non si possono cambiare penalita' e incidenti (restano 3 s e limite 3), ma i tre tasti fisici funzionano.
@@ -120,7 +120,8 @@ Non ho potuto provare lo sketch sulla scheda. Le fonti per display e touch sono 
 9. Bottone RIPARTENZA a fine ciclo.
 10. Zone sensibili piu' grandi per i tasti [-] [+] della penalita': dopo la prova sulla scheda risultavano difficili da toccare perche' vicini al bordo superiore, dove il touch capacitivo e' meno preciso. L'area sensibile ora arriva al bordo dello schermo e si estende sotto il tasto disegnato.
 11. **Rinomina e ripartenza senza pausa**: etichette PENALITA', INCIDENTI, PILOTA 1/2/3; tolta la scritta in basso `premute / limite`; tolta la pausa di 5 s: RIPARTENZA compare subito dopo l'impulso.
-12. **Scritta `Safety Car!` al posto di `ATTESA...`, tasto RESET piu' stretto (versione attuale)**; il riquadro di stato si allarga e il bottone RIPARTENZA ha il testo piu' grande.
+12. Scritta `Safety Car!` al posto di `ATTESA...`, tasto RESET piu' stretto; il riquadro di stato si allarga e il bottone RIPARTENZA ha il testo piu' grande.
+13. **Scritte `STOP!` (impulso dopo la penalita') e `START!` (impulso dopo RIPARTENZA) al posto di `IMPULSO` (versione attuale)**.
 
 ## 9. Prossimi passi possibili
 
