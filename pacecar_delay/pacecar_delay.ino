@@ -17,6 +17,8 @@
  *     Se il touch non e' disponibile la ripartenza viene saltata (altrimenti il sistema resterebbe bloccato).
  *   - Durante il ciclo, ritardo e limite non sono modificabili ([-] [+] grigi). RESET e' sempre attivo.
  *   - I contatori sono in RAM: si azzerano a ogni riavvio.
+ *   - All'accensione mostra per 4 secondi una schermata di avvio: l'immagine in splash_image.h se esiste
+ *     (si crea con tools/img2splash.py), altrimenti una schermata disegnata da codice.
  *
  * Libreria: "GFX Library for Arduino" (moononournation). Il touch FT6336U e' letto via Wire, senza libreria.
  * Board: "ESP32S3 Dev Module", USB CDC On Boot: Enabled, Flash 16MB, Flash Mode DIO, PSRAM OPI (N16R8).
@@ -34,6 +36,11 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <Arduino_GFX_Library.h>
+
+#if __has_include("splash_image.h")
+#include "splash_image.h"            // const uint16_t SPLASH_IMG[320*240], generato da tools/img2splash.py
+#define HAS_SPLASH_IMAGE 1
+#endif
 
 // Colori RGB565 definiti qui: i nomi BLACK/WHITE/... dipendono dalla versione di Arduino_GFX
 constexpr uint16_t C_BLACK = 0x0000, C_WHITE = 0xFFFF, C_RED = 0xF800, C_GREEN = 0x07E0, C_BLUE = 0x001F;
@@ -86,6 +93,7 @@ constexpr uint8_t PIN_OUT = 21;                      // IO21: uscita impulso (3.
 // ---- Temporizzazioni e limiti ----
 constexpr uint32_t PULSE_MS      = 400;
 constexpr uint32_t TOUCH_POLL_MS = 25;
+constexpr uint32_t SPLASH_MS     = 4000;   // durata della schermata di avvio
 constexpr uint8_t  DELAY_MAX_S   = 10;
 constexpr uint8_t  LIMIT_MIN     = 1;
 constexpr uint8_t  LIMIT_MAX     = 10;
@@ -225,6 +233,23 @@ void drawStatus() {
   }
 }
 
+// Schermata di avvio: immagine da splash_image.h, oppure bandiera a scacchi con il nome
+void drawSplash() {
+#ifdef HAS_SPLASH_IMAGE
+  gfx->draw16bitRGBBitmap(0, 0, SPLASH_IMG, SCREEN_W, SCREEN_H);
+#else
+  gfx->fillScreen(C_BLACK);
+  for (int16_t y = 0; y < 40; y += 20)
+    for (int16_t x = 0; x < SCREEN_W; x += 20) {
+      uint16_t c = (((x / 20) + (y / 20)) & 1) ? C_BLACK : C_WHITE;
+      gfx->fillRect(x, y, 20, 20, c);
+      gfx->fillRect(x, SCREEN_H - 40 + y, 20, 20, c);
+    }
+  Rect name = {0, 80, SCREEN_W, 80};
+  drawCenteredIn(name, "PACECAR", 6, C_WHITE);
+#endif
+}
+
 void resetCounters() {
   for (uint8_t i = 0; i < NUM_KEYS; i++) { pressCount[i] = 0; drawKey(i); }
 }
@@ -239,17 +264,22 @@ void setState(State s) {
 
 void setup() {
   pinMode(PIN_OUT, OUTPUT); digitalWrite(PIN_OUT, LOW);
-  pinMode(LCD_BL, OUTPUT);  digitalWrite(LCD_BL, HIGH);
-  for (Button &k : keys) k.begin();
+  pinMode(LCD_BL, OUTPUT);  digitalWrite(LCD_BL, LOW);   // retroilluminazione accesa solo a immagine disegnata
   if (TOUCH_DEBUG) Serial.begin(115200);
 
   gfx->begin(40000000);                                  // 40 MHz: a 80 MHz il display da' immagini corrotte
   gfx->setRotation(1);                                   // landscape 320x240
+  drawSplash();
+  digitalWrite(LCD_BL, HIGH);
+  uint32_t splashStart = millis();
+
+  touchOk = initTouch();                                 // durante la schermata di avvio
+  while (millis() - splashStart < SPLASH_MS) delay(10);  // 4 secondi in tutto
+
+  for (Button &k : keys) k.begin();                      // dopo lo splash: un tasto tenuto premuto non conta
   gfx->fillScreen(C_BLACK);
   drawCenteredIn(LBL_DELAY, "PENALITA'", 2, C_CYAN);
   drawCenteredIn(LBL_LIMIT, "INCIDENTI", 2, C_CYAN);
-
-  touchOk = initTouch();
   if (!touchOk) drawCenteredIn(HINT_AREA, "TOUCH NON TROVATO", 2, C_RED);
 
   drawDelay();
