@@ -38,3 +38,8 @@ All'accensione lo sketch mostra per 4 secondi l'immagine "Carrera Digital - Safe
 - R2 10k (base Q1 -> GND): senza, il pin e' flottante durante reset/flash e puo' attivare il carico.
 - NPN + R1 1k affidabile fino a ~100 mA; oltre usare un MOSFET logic-level. D1 obbligatorio con carichi induttivi.
 - Il limite di pressioni non e' una protezione di sicurezza: e' solo software e si azzera a ogni riavvio. Se un carico bloccato ON e' pericoloso serve un limite hardware (fusibile).
+
+## carrera_start - pulsante START verso la Control Unit (ESP32-S3-DevKitC-1 N16R8)
+- Sketch: `carrera_start/carrera_start.ino`. Un pulsante (GPIO4 verso GND) invia alla CU Carrera Digital 124/132 il comando START: seriale 19200 8N1, frame `"T26$` (payload `T2` = tasto START/ENTER, checksum = '0' + somma&0xF).
+- UART1: TX = GPIO17, RX = GPIO18. Risposte della CU stampate sul monitor USB a 115200.
+- Non testato su hardware. Verificare livelli logici (3.3 V vs 5 V) e piedinatura della porta della CU prima di collegare.
